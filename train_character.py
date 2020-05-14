@@ -180,7 +180,7 @@ def train_character_model():
   log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
   tensorboard_callback = callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
   batch_size = 8
-  callbacks = [tensorboard_callback, stop_training_callback()]
+  callbacks_list = [tensorboard_callback, stop_training_callback()]
 
   print("\nStarting training for license plate characters")
   history = model.fit(
@@ -188,7 +188,7 @@ def train_character_model():
         steps_per_epoch = train_generator.samples // batch_size,
         validation_data = validation_generator, 
         validation_steps = validation_generator.samples // batch_size,
-        epochs = 500, callbacks=callbacks)
+        epochs = 500, callbacks=callbacks_list)
   print("Training completed for License plate characters")
   return model, history
 
