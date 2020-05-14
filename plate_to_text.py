@@ -5,6 +5,7 @@ import numpy as np
 import cv2
 import glob
 import os
+import sys
 import time
 from PIL import Image
 from tensorflow.keras.models import load_model
@@ -27,9 +28,9 @@ def show_img(index):
   bx = int(df["bottom_x"].iloc[index] * WIDTH)
   by = int(df["bottom_y"].iloc[index] * HEIGHT)
 
-    image = cv2.rectangle(image, (tx, ty), (bx, by), (0, 0, 255), 1)
-    plt.imshow(image)
-    plt.show()
+  image = cv2.rectangle(image, (tx, ty), (bx, by), (0, 0, 255), 1)
+  plt.imshow(image)
+  plt.show()
 
 def crop_img(image_path):
   # https://stackoverflow.com/questions/49643907/clipping-input-data-to-the-valid-range-for-imshow-with-rgb-data-0-1-for-floa
@@ -142,8 +143,13 @@ def final(image_path):
   text_output = tessy_ocr(crop_image)
   return text_output
 
-model = load_model('model.hdf5')
-WIDTH = 224
-HEIGHT = 224
-CHANNEL = 3
-print(final('/content/e.jpg'))
+if __name__=="__main__":
+  
+  model = load_model('model.hdf5')
+  WIDTH = 224
+  HEIGHT = 224
+  CHANNEL = 3
+  print(f"No. of images passed: {len(sys.argv)-1}")
+  for index, image_name in enumerate(sys.argv[1:]):
+    license_text = final(image_name)
+    print("License text for image {} is {} ".format(image_name, license_text))

@@ -7,6 +7,8 @@ import glob
 import os
 import time
 import wget
+import zipfile
+import pytesseract
 from PIL import Image
 
 from tensorflow.keras.applications.vgg16 import VGG16
@@ -15,72 +17,48 @@ from tensorflow.keras.models import Model, Sequential, load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.optimizers import Adam
 
-import pytesseract
-
 # from google.colab.patches import cv2_imshow
 # remember to replace cv2_imshow with cv2.imshow when not using colab
 
+def download_data(plates_df):
+  '''Downloads car images'''
 
-os.makedirs("Indian Number Plates", exist_ok = True)
+  dataset = dict()
+  dataset["image_name"] = list()
+  dataset["image_width"] = list()
+  dataset["image_height"] = list()
+  dataset["top_x"] = list()
+  dataset["top_y"] = list()
+  dataset["bottom_x"] = list()
+  dataset["bottom_y"] = list()
 
-os.makedirs("snapshots", exist_ok=True)
+  #Downloading images
+  counter = 0
+  print('Downloading car images')
+  for index, row in plates_df.iterrows():
+      file_name = "Indian Number Plates/licensed_car{}.jpeg".format(counter)
+      
+      dataset["image_name"].append("licensed_car{}".format(counter))
+      
+      data = row["annotation"]
+      dataset["image_width"].append(data[0]["imageWidth"])
+      dataset["image_height"].append(data[0]["imageHeight"])
+      dataset["top_x"].append(data[0]["points"][0]["x"])
+      dataset["top_y"].append(data[0]["points"][0]["y"])
+      dataset["bottom_x"].append(data[0]["points"][1]["x"])
+      dataset["bottom_y"].append(data[0]["points"][1]["y"])
+      
+      counter += 1
+      
+      if os.path.exists(file_name):
+        continue
 
-#using  >/dev/null 2>&1 to suppress output
-os.system('gdown --id 1mTtB8GTWs74Yeqm0KMExGJZh1eDbzUlT --output indian_number_plates.json  >/dev/null 2>&1')
-# os.system('gdown --id 1wPgOBoSks6bTIs9RzNvZf6HWROkciS8R --output snapshots/resnet50_csv_10.h5  >/dev/null 2>&1')
-
-
-
-url = "https://www.python.org/static/img/python-logo@2x.png"
-wget.download(url, 'c:/users/LikeGeeks/downloads/pythonLogo.png')
-plates_df = pd.read_json('indian_number_plates.json', lines=True)
-
-dataset = dict()
-dataset["image_name"] = list()
-dataset["image_width"] = list()
-dataset["image_height"] = list()
-dataset["top_x"] = list()
-dataset["top_y"] = list()
-dataset["bottom_x"] = list()
-dataset["bottom_y"] = list()
-
-#Downloading images
-counter = 0
-print('Downloading car images')
-for index, row in plates_df.iterrows():
-    img = urllib.request.urlopen(row["content"])
-    img = Image.open(img)
-    img = img.convert('RGB')
-    img.save("Indian Number Plates/licensed_car{}.jpeg".format(counter), "JPEG")
-    
-    dataset["image_name"].append("licensed_car{}".format(counter))
-    
-    data = row["annotation"]
-    
-    dataset["image_width"].append(data[0]["imageWidth"])
-    dataset["image_height"].append(data[0]["imageHeight"])
-    dataset["top_x"].append(data[0]["points"][0]["x"])
-    dataset["top_y"].append(data[0]["points"][0]["y"])
-    dataset["bottom_x"].append(data[0]["points"][1]["x"])
-    dataset["bottom_y"].append(data[0]["points"][1]["y"])
-    
-    counter += 1
-print("Downloaded {} car images.".format(counter))
-df = pd.DataFrame(dataset)
-df.to_csv("indian_license_plates.csv", index=False)
-
-
-df = pd.read_csv("indian_license_plates.csv")
-df["image_name"] = df["image_name"] + ".jpeg"
-df.drop(["image_width", "image_height"], axis=1, inplace=True)
-
-lucky_test_samples = np.random.randint(0, len(df), 5)
-reduced_df = df.drop(lucky_test_samples, axis=0)
-
-
-WIDTH = 224
-HEIGHT = 224
-CHANNEL = 3
+      img = urllib.request.urlopen(row["content"])
+      img = Image.open(img)
+      img = img.convert('RGB')
+      img.save(file_name, "JPEG")
+  print("Downloaded {} car images.".format(counter))
+  return dataset
 
 
 def show_img(index):
@@ -97,58 +75,60 @@ def show_img(index):
     plt.imshow(image)
     plt.show()
 
-#Model building
-datagen = ImageDataGenerator(rescale=1./255, validation_split=0.1)
+def train_plate_detector(df):
+  #Model building
+  datagen = ImageDataGenerator(rescale=1./255, validation_split=0.1)
 
-train_generator = datagen.flow_from_dataframe(
-    reduced_df,
-    directory="Indian Number Plates/",
-    x_col="image_name",
-    y_col=["top_x", "top_y", "bottom_x", "bottom_y"],
-    target_size=(WIDTH, HEIGHT),
-    batch_size=32, 
-    class_mode='raw',
-    subset="training")
+  train_generator = datagen.flow_from_dataframe(
+      df,
+      directory="Indian Number Plates/",
+      x_col="image_name",
+      y_col=["top_x", "top_y", "bottom_x", "bottom_y"],
+      target_size=(WIDTH, HEIGHT),
+      batch_size=32, 
+      class_mode='raw',
+      subset="training")
 
-validation_generator = datagen.flow_from_dataframe(
-    reduced_df,
-    directory="Indian Number Plates/",
-    x_col="image_name",
-    y_col=["top_x", "top_y", "bottom_x", "bottom_y"],
-    target_size=(WIDTH, HEIGHT),
-    batch_size=32, 
-    class_mode='raw',
-    subset="validation")
-
-
-model = Sequential()
-model.add(VGG16(weights="imagenet", include_top=False, input_shape=(HEIGHT, WIDTH, CHANNEL)))
-model.add(Flatten())
-model.add(Dense(128, activation="relu"))
-model.add(Dense(64, activation="relu"))
-model.add(Dense(64, activation="relu"))
-model.add(Dense(4, activation="sigmoid"))
-
-model.layers[-6].trainable = False
-# model.summary()
+  validation_generator = datagen.flow_from_dataframe(
+      df,
+      directory="Indian Number Plates/",
+      x_col="image_name",
+      y_col=["top_x", "top_y", "bottom_x", "bottom_y"],
+      target_size=(WIDTH, HEIGHT),
+      batch_size=32, 
+      class_mode='raw',
+      subset="validation")
 
 
-STEP_SIZE_TRAIN = int(np.ceil(train_generator.n / train_generator.batch_size))
-STEP_SIZE_VAL = int(np.ceil(validation_generator.n / validation_generator.batch_size))
-train_generator.reset()
-validation_generator.reset()
+  model = Sequential()
+  model.add(VGG16(weights="imagenet", include_top=False, input_shape=(HEIGHT, WIDTH, CHANNEL)))
+  model.add(Flatten())
+  model.add(Dense(128, activation="relu"))
+  model.add(Dense(64, activation="relu"))
+  model.add(Dense(64, activation="relu"))
+  model.add(Dense(4, activation="sigmoid"))
+
+  model.layers[-6].trainable = False
+  # model.summary()
 
 
-# Training
-adam = Adam(lr=0.0005)
-model.compile(optimizer=adam, loss="mse")
-print("Started training model")
-history = model.fit(train_generator,
-    steps_per_epoch=STEP_SIZE_TRAIN,
-    validation_data=validation_generator,
-    validation_steps=STEP_SIZE_VAL,
-    epochs=30)
-print("Training completed with final loss: {}".format(history.history['val_loss'][-1]))
+  STEP_SIZE_TRAIN = int(np.ceil(train_generator.n / train_generator.batch_size))
+  STEP_SIZE_VAL = int(np.ceil(validation_generator.n / validation_generator.batch_size))
+  train_generator.reset()
+  validation_generator.reset()
+
+
+  # Training
+  adam = Adam(lr=0.0005)
+  model.compile(optimizer=adam, loss="mse")
+  print("Started training plate detector model")
+  history = model.fit(train_generator,
+      steps_per_epoch=STEP_SIZE_TRAIN,
+      validation_data=validation_generator,
+      validation_steps=STEP_SIZE_VAL,
+      epochs=50)
+  print("Training completed with final loss: {}".format(history.history['val_loss'][-1]))
+  return model, history
 
 def plot_model_loss(history):
     plt.plot(history.history['loss'])
@@ -176,5 +156,30 @@ def lucky_samples_inspection():
       plt.imshow(crop_img)
       plt.show()
 
-model.save('model.hdf5')
-model = load_model('model.hdf5')
+
+if __name__=="__main__":
+  
+  os.makedirs("Indian Number Plates", exist_ok = True)
+  os.makedirs("snapshots", exist_ok=True)
+
+  with zipfile.ZipFile('data.zip', 'r') as zip_ref:
+      zip_ref.extractall()
+
+  plates_df = pd.read_json('indian_number_plates.json', lines=True)
+  dataset = download_data(plates_df)
+  df = pd.DataFrame(dataset)
+  df.to_csv("indian_license_plates.csv", index=False)
+  df = pd.read_csv("indian_license_plates.csv")
+  df["image_name"] = df["image_name"] + ".jpeg"
+  df.drop(["image_width", "image_height"], axis=1, inplace=True)
+
+  lucky_test_samples = np.random.randint(0, len(df), 5)
+  reduced_df = df.drop(lucky_test_samples, axis=0)
+
+  WIDTH = 224
+  HEIGHT = 224
+  CHANNEL = 3
+
+  model, history = train_plate_detector(reduced_df)
+  model.save('model.hdf5')
+  model = load_model('model.hdf5')
