@@ -22,14 +22,14 @@ Python Packages Needed
 
 - Run these scripts to clone the repository, install dependencies and train the detectors.
 
->```
+```
 !git clone https://github.com/udaylunawat/License_plate_detector_Deep_Learning.git
 !bash conda_create_environment.sh
 !bash train.sh
 ```
 - Run this script and pass image as cli to get result
 
->```
+```
 python plate_to_text/py car.jpg
 ```
 
