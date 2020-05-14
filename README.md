@@ -1,6 +1,6 @@
 # Automatic-License-Plate-Recognition
 
-The project developed using TensorFlow to detect the License Plate from a car and uses the Tesseract Engine to recognize the charactes from the detected plate.
+The project developed using TensorFlow to detect the License Plates (specifically trained on Indian car dataset) from a car and uses the Tesseract Engine to recognize the charactes from the detected plate.
 
 Software Packages Needed
 - Anaconda 3 (Tool comes with most of the required python packages along with python3)
@@ -24,6 +24,9 @@ Python Packages Needed
 
 ```
 !git clone https://github.com/udaylunawat/Automatic-License-Plate-Recognition.git
+%cd Automatic-License-Plate-Recognition/
+
+# Running shell script on colab
 !bash conda_create_environment.sh
 !bash train.sh
 ```
