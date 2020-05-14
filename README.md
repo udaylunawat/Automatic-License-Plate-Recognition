@@ -11,19 +11,26 @@ Python Packages Needed
 - openCV
 - pytesseract
 
+
+## Method
+
+1. Detect License Plate
+2. Perform segmentation of characters
+3. Train a ML model to predict characters
+4. Prediction of characters in License Plate
 ## Instructions
 
 - Run these scripts to clone the repository, install dependencies and train the detectors.
 
-```
+>```
 !git clone https://github.com/udaylunawat/License_plate_detector_Deep_Learning.git
 !bash conda_create_environment.sh
 !bash train.sh
 ```
 - Run this script and pass image as cli to get result
 
-```
-python plate_to_text.py car.jpg
+>```
+python plate_to_text/py car.jpg
 ```
 
 
