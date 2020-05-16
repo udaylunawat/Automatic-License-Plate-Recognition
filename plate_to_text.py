@@ -9,9 +9,8 @@ import sys
 import time
 from PIL import Image
 from tensorflow.keras.models import load_model
-
 import pytesseract
-# from google.colab.patches import cv2_imshow
+from google.colab.patches import cv2_imshow
 # remember to replace cv2_imshow with cv2.imshow when not using colab
 
 from train_character import segment_characters
@@ -44,10 +43,10 @@ def crop_img(image_path):
   img = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_BGR2RGB)
   image = cv2.rectangle(img, (xt, yt), (xb, yb), (0, 0, 255), 1)
   crop_img = img[int(yt):int(yb), int(xt):int(xb)]
+  crop_img = (crop_img * 255).astype(np.uint8)
   # plt.imshow(image)
   # plt.imshow(crop_img)
-  return (crop_img * 255).astype(np.uint8)
-
+  return crop_img
 
   # get grayscale image
 def get_grayscale(image):
