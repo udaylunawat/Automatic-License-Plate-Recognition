@@ -79,7 +79,15 @@ def opening(image):
 #canny edge detection
 def canny(image):
     return cv2.Canny(image, 100, 200)
-
+    
+def contrast(img):
+  brightness = 50
+  contrast = 30
+  img = np.int16(img)
+  img = img * (contrast/127+1) - contrast + brightness
+  img = np.clip(img, 0, 255)
+  img = np.uint8(img)
+  return img
 #skew correction
 def deskew(image):
   coords = np.column_stack(np.where(image > 0))
@@ -129,18 +137,18 @@ def output_text():
     else:
         return tessy_ocr(crop_image)
 
-def final(image_path):  
-  # image_path = '/content/e.jpg'
-  # img = cv2.imread(image_path)
+def final(image_path):
   loaded_image = crop_img(image_path)
-  # loaded_image = crop_img(img)
   grey = get_grayscale(loaded_image)
-  # canny = canny(grey)
-  noise_removed = remove_noise(grey)
-  seg_char = segment_characters(loaded_image)
+  (thresh, im_bw) = cv2.threshold(grey, 224, 224, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+  # canny_img = canny(grey)
+  # noise_removed = remove_noise(grey)
+
+  preprocess = contrast(im_bw)
+  # seg_char = segment_characters(loaded_image)
   # text_model = load_model('/content/text_99.h5')
-  crop_image = crop_img(image_path)
-  text_output = tessy_ocr(crop_image)
+  cv2_imshow(preprocess)
+  text_output = tessy_ocr(preprocess)
   return text_output
 
 if __name__=="__main__":
