@@ -77,7 +77,7 @@ def show_img(index):
 
 def train_plate_detector(df):
   #Model building
-  datagen = ImageDataGenerator(rescale=1./255, validation_split=0.1)
+  datagen = ImageDataGenerator(rescale=1./255, , width_shift_range=0.05, height_shift_range=0.05, rotation_range=30, validation_split=0.1)
 
   train_generator = datagen.flow_from_dataframe(
       df,
