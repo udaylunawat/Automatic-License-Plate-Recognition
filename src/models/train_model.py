@@ -14,10 +14,6 @@ from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.optimizers import Adam
 
-#Remove warning and debugging messages
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
-
 df = pd.read_csv('data/processed/processed.csv')
 
 WIDTH = 224

@@ -31,13 +31,14 @@ download:	data/raw/Indian_Number_plates.json
 
 
 data/raw/Indian_Number_plates.json:
+	mkdir -p data/raw data/external data/interim data/processed
 	wget $(DOWNLOAD_URL) -O data/external/Indian_Number_plates.json
 
 serialize_csv:
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py
 
 rawpreprocess:
-	$(PYTHON_INTERPRETER) src/data/preprocess.py -i data/raw -o data/processed
+	$(PYTHON_INTERPRETER) src/data/preprocess.py -i data/raw/ -o data/processed/
 
 ## Train Model
 train: data
