@@ -46,7 +46,7 @@ def download_data(data):
       img = Image.open(img)
       img = img.convert('RGB')
       img.save(file_name, "JPEG")
-  print("Downloaded {} car images.".format(counter))
+  print("Downloaded {} car images.\n".format(counter))
   return pd.DataFrame(dataset)
 
 
