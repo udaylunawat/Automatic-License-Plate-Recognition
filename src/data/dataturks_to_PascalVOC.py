@@ -21,7 +21,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 def maybe_download(image_url, image_dir, counter):
     """Download the image if not already exist, return the location path"""
-    extension = image_url.split(".")[-1]
+    # extension = image_url.split(".")[-1]
     filePath = os.path.join(image_dir, str(counter)+'.'+'jpg')
     if (os.path.exists(filePath)):
         return filePath
