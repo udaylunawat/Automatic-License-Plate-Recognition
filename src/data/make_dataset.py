@@ -25,7 +25,7 @@ def download_data(data):
   counter = 0
   print('\nDownloading car images')
   for index, row in data.iterrows():
-      file_name = "data/raw/"+"Indian_Number_Plates/{}.jpeg".format(counter)
+      file_name = "data/raw/"+"Indian_Number_Plates/{}.jpg".format(counter)
       
       dataset["image_name"].append("{}".format(counter))
       
