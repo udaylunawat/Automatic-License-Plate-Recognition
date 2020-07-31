@@ -23,7 +23,7 @@ endif
 ## Install Python Dependencies
 requirements: test_environment
 	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
-	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
+	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt --progress-bar emoji | grep -v 'already satisfied'
 
 ## Make Dataset
 data:	requirements download serialize_csv rawpreprocess
@@ -39,6 +39,8 @@ serialize_csv:
 
 rawpreprocess:
 	$(PYTHON_INTERPRETER) src/data/preprocess.py -i data/raw/ -o data/processed/
+	mkdir -p data/processed/VOC/Annotations
+	$(PYTHON_INTERPRETER) src/data/dataturks_to_PascalVOC.py data/external/Indian_Number_plates.json data/raw/Indian_Number_Plates data/processed/VOC/xml
 
 ## Train Model
 train: data

@@ -25,9 +25,9 @@ def download_data(data):
   counter = 0
   print('\nDownloading car images')
   for index, row in data.iterrows():
-      file_name = "data/raw/"+"Indian Number Plates/licensed_car{}.jpeg".format(counter)
+      file_name = "data/raw/"+"Indian_Number_Plates/{}.jpeg".format(counter)
       
-      dataset["image_name"].append("licensed_car{}".format(counter))
+      dataset["image_name"].append("{}".format(counter))
       
       data = row["annotation"]
       dataset["image_width"].append(data[0]["imageWidth"])
@@ -61,12 +61,12 @@ def main(input_path, output_path):
         csv file (../raw) to be further processed.
     """
     logger = logging.getLogger(__name__)
-    logger.info('making final data set from raw data')
+    logger.info('making raw data')
     
     plates_json_df = pd.read_json(input_path+"Indian_Number_plates.json", lines=True)
     
     #Downloading car images
-    os.makedirs(output_path+"Indian Number Plates", exist_ok = True)
+    os.makedirs(output_path+"Indian_Number_Plates", exist_ok = True)
     df = download_data(plates_json_df)
 	
 	  # Serialize the dataframe
