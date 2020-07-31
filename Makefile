@@ -8,8 +8,8 @@ PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 BUCKET = [OPTIONAL] your-bucket-for-syncing-data (do not include 's3://')
 PROFILE = default
 PYTHON_INTERPRETER = python3
-DOWNLOAD_URL = https://www.dropbox.com/s/8netfite5znq6o4/Indian_Number_plates.json
-
+JSON_DOWNLOAD_URL = https://www.dropbox.com/s/8netfite5znq6o4/Indian_Number_plates.json
+IMAGES_ZIP = https://www.dropbox.com/s/k3mhm1kz192bwue/Indian_Number_Plates.7z
 ifeq (,$(shell which conda))
 HAS_CONDA=False
 else
@@ -26,15 +26,16 @@ requirements: test_environment
 	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt --progress-bar emoji | grep -v 'already satisfied'
 
 ## Make Dataset
-data:	requirements download serialize_csv rawpreprocess
-download:	data/raw/Indian_Number_plates.json
+data:	requirements download_json serialize_csv rawpreprocess
+download_json:	json
 
 
-data/raw/Indian_Number_plates.json:
-	mkdir -p data/raw data/external data/interim data/processed
-	wget $(DOWNLOAD_URL) -O data/external/Indian_Number_plates.json -q --show-progress
+json:
+	mkdir -p data/raw data/external data/interim data/processed data/raw/Indian_Number_Plates
+	wget $(JSON_DOWNLOAD_URL) -O data/external/Indian_Number_plates.json -q --show-progress
 
 serialize_csv:
+	wget $(IMAGES_ZIP) data/raw/Indian_Number_Plates -q --show-progress
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py
 
 rawpreprocess:
