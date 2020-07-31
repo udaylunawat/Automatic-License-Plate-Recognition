@@ -21,22 +21,17 @@ Python Packages Needed
 4. Prediction of characters in License Plate
 
 ## Instructions
-
-- Run these scripts to clone the repository, install dependencies and train the detectors.
-
-```
-!git clone https://github.com/udaylunawat/Automatic-License-Plate-Recognition.git
-%cd Automatic-License-Plate-Recognition/
-
-# Running shell script on colab
-!bash conda_create_environment.sh
-!bash train.sh
-```
-- Run this script and pass image as cli to get result
-
-```
-python plate_to_text/py car.jpg
-```
+<table class="tfo-notebook-buttons" align="left">
+  <td>
+    <a target="_blank" href="https://colab.research.google.com/drive/1A0HUokNvbw37F_1QboYK8UezZcnzsSg4#scrollTo=08X32STHKNS4"><img src="https://www.tensorflow.org/images/colab_logo_32px.png" />Run in Google Colab</a>
+  </td>
+  <td>
+    <a target="_blank" href="https://github.com/udaylunawat/Automatic-License-Plate-Recognition"><img src="https://www.tensorflow.org/images/GitHub-Mark-32px.png" />View source on GitHub</a>
+  </td>
+  <td>
+    <a href="https://github.com/udaylunawat/Automatic-License-Plate-Recognition"><img src="https://www.tensorflow.org/images/download_logo_32px.png" />Download notebook</a>
+  </td>
+</table>
 
 Project Organization
 ------------
