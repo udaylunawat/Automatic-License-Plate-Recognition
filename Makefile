@@ -39,8 +39,8 @@ serialize_csv:
 
 rawpreprocess:
 	$(PYTHON_INTERPRETER) src/data/preprocess.py -i data/raw/ -o data/processed/
-	mkdir -p data/processed/VOC/Annotations
-	$(PYTHON_INTERPRETER) src/data/dataturks_to_PascalVOC.py data/external/Indian_Number_plates.json data/raw/Indian_Number_Plates data/processed/VOC/xml
+	mkdir -p data/processed/VOC/Annotations data/processed/VOC/JPEGImages
+	$(PYTHON_INTERPRETER) src/data/dataturks_to_PascalVOC.py data/external/Indian_Number_plates.json data/raw/Indian_Number_Plates data/processed/VOC/Annotations
 
 ## Train Model
 train: data
