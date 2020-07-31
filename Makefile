@@ -41,7 +41,7 @@ serialize_csv:
 
 rawpreprocess:
 	$(PYTHON_INTERPRETER) src/data/preprocess.py -i data/raw/ -o data/processed/
-	mkdir -p data/processed/VOC/Annotations data/processed/VOC/JPEGImages
+	mkdir -p data/processed/VOC/Annotations data/processed/VOC/JPEGImages data/processed/VOC/ImageSets/Main
 	cp data/raw/Indian_Number_Plates/* data/processed/VOC/JPEGImages
 	$(PYTHON_INTERPRETER) src/data/dataturks_to_PascalVOC.py data/external/Indian_Number_plates.json data/processed/VOC/JPEGImages data/processed/VOC/Annotations
 
