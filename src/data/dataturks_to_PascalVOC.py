@@ -64,9 +64,9 @@ def get_xml_for_bbx(bbx_label, bbx_data, width, height):
     xml = "<object>\n"
     xml = xml + "\t<name>" + bbx_label + "</name>\n"
     xml = xml + "\t<pose>Unspecified</pose>\n"
-    xml = xml + "\t<truncated>Unspecified</truncated>\n"
-    xml = xml + "\t<difficult>Unspecified</difficult>\n"
-    xml = xml + "\t<occluded>Unspecified</occluded>\n"
+    xml = xml + "\t<truncated>0</truncated>\n" # Changed from Unspecified to 0
+    xml = xml + "\t<difficult>0</difficult>\n" # Changed from Unspecified to 0
+    xml = xml + "\t<occluded>0</occluded>\n" # Changed from Unspecified to 0
     xml = xml + "\t<bndbox>\n"
     xml = xml +     "\t\t<xmin>" + str(xmin) + "</xmin>\n"
     xml = xml +     "\t\t<xmax>" + str(xmax) + "</xmax>\n"
