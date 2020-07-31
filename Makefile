@@ -35,8 +35,8 @@ json:
 	wget $(JSON_DOWNLOAD_URL) -O data/external/Indian_Number_plates.json -q --show-progress
 
 serialize_csv:
-	wget $(IMAGES_ZIP) data/external -q --show-progress
-	7z x data/external/Indian_Number_Plates.7z -odata/raw/Indian_Number_Plates
+	wget $(IMAGES_ZIP) -P data/external -q --show-progress
+	7z x data/external/Indian_Number_Plates.7z -odata/raw/Indian_Number_Plates > NUL:
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py
 
 rawpreprocess:
