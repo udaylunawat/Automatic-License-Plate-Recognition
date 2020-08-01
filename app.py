@@ -123,6 +123,7 @@ def about():
       - [x] Basic inference
     - [ ] Build basic upload functionality and output functionality to view cropped file in FastAPI
       - [x] Build it using Streamlit
+      - [ ] Replicate [this](https://github.com/MecraS/play-with-ml)
     - [x] Proper output without the requirements installation logs
     - [x] export TF_CPP_MIN_LOG_LEVEL=3
       - [x] Add this inside script (automate somehow)
