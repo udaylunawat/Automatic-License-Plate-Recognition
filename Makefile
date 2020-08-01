@@ -33,7 +33,7 @@ download_json:	json_7z
 directory_setup:
 	mkdir -p data/raw data/external data/interim data/processed data/raw/Indian_Number_Plates
 	mkdir -p data/processed/VOC/Annotations data/processed/VOC/JPEGImages data/processed/VOC/ImageSets/Main
-	mkdir models/TrainingOutput models/snapshots
+	mkdir -p models/TrainingOutput models/snapshots
 
 json_7z:
 	wget $(JSON_DOWNLOAD_URL) -O data/external/Indian_Number_plates.json -q --show-progress
