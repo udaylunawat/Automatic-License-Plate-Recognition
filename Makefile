@@ -22,26 +22,29 @@ endif
 
 ## Install Python Dependencies
 requirements: test_environment
-	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
-	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt --progress-bar emoji | grep -v 'already satisfied'
+	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel --progress-bar off
+	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt --progress-bar off | grep -v 'already satisfied'
 
 ## Make Dataset
-data:	requirements download_json serialize_csv rawpreprocess
-download_json:	json
+data:	requirements directory_setup download_json serialize_csv rawpreprocess
+download_json:	json_7z
 
 
-json:
+directory_setup:
 	mkdir -p data/raw data/external data/interim data/processed data/raw/Indian_Number_Plates
-	wget $(JSON_DOWNLOAD_URL) -O data/external/Indian_Number_plates.json -q --show-progress
+	mkdir -p data/processed/VOC/Annotations data/processed/VOC/JPEGImages data/processed/VOC/ImageSets/Main
+	mkdir models/TrainingOutput models/snapshots
 
-serialize_csv:
+json_7z:
+	wget $(JSON_DOWNLOAD_URL) -O data/external/Indian_Number_plates.json -q --show-progress
 	wget $(IMAGES_ZIP) -P data/external -q --show-progress
 	7z x data/external/Indian_Number_Plates.7z -odata/raw/Indian_Number_Plates -y > nul
+
+serialize_csv:
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py
 
 rawpreprocess:
 	$(PYTHON_INTERPRETER) src/data/preprocess.py -i data/raw/ -o data/processed/
-	mkdir -p data/processed/VOC/Annotations data/processed/VOC/JPEGImages data/processed/VOC/ImageSets/Main
 	cp data/raw/Indian_Number_Plates/* data/processed/VOC/JPEGImages
 	$(PYTHON_INTERPRETER) src/data/dataturks_to_PascalVOC.py data/external/Indian_Number_plates.json data/processed/VOC/JPEGImages data/processed/VOC/Annotations
 
