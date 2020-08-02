@@ -8,7 +8,7 @@ def pretrained_model_load():
 
 def annot_classes_generator():
     train_df = config.train_df.copy()
-    train_df.image_name = train_df.image_name.apply(lambda x: 'data/processed/VOC/JPEGImages/'+x)
+    train_df.image_name = train_df.image_name.apply(lambda x: 'VOC/JPEGImages/'+x)
     train_df.to_csv(config.ANNOTATIONS_FILE, index=False, header=False)
     
     classes = set(['license_plate'])
