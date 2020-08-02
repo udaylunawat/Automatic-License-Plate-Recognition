@@ -15,7 +15,6 @@ def main(input_path, output_path):
     print("Preprocessing indian_license_plate.csv")
     df = pd.read_csv(input_path+"indian_license_plates.csv", dtype={'image_name':str})
     df["image_name"] = df["image_name"] + ".jpg"
-    df.drop(["image_width", "image_height"], axis=1, inplace=True)
     df.to_csv(output_path+"processed.csv", index=False)
     print("Preprocessed and saved as processed.csv")
     
