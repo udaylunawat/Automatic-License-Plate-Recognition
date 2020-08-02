@@ -1,3 +1,4 @@
+from src import config
 import argparse
 import sys
 import os
@@ -18,6 +19,23 @@ from PIL import Image
 
 #enable info logging.
 logging.getLogger().setLevel(logging.INFO)
+
+
+def generate_txt():
+
+    with open('data/processed/VOC/ImageSets/Main/trainval.txt', 'w') as f:
+        for name in config.trainval:
+            f.write("%s\n" % name)
+
+    with open('data/processed/VOC/ImageSets/Main/train.txt', 'w') as f:
+        for name in config.train:
+            f.write("%s\n" % name)
+
+    with open('data/processed/VOC/ImageSets/Main/test.txt', 'w') as f:
+        for name in config.test:
+            f.write("%s\n" % name)
+
+
 
 def maybe_download(image_url, image_dir, counter):
     """Download the image if not already exist, return the location path"""
@@ -92,8 +110,8 @@ def convert_to_PascalVOC(dataturks_labeled_item, image_dir, xml_out_dir, counter
     try:
         data = json.loads(dataturks_labeled_item)
         if len(data['annotation']) == 0:
-            logging.info("Ignoring Skipped Item");
-            return False;
+            logging.info("Ignoring Skipped Item")
+            return False
 
         width = data['annotation'][0]['imageWidth']
         height = data['annotation'][0]['imageHeight']
@@ -121,10 +139,10 @@ def convert_to_PascalVOC(dataturks_labeled_item, image_dir, xml_out_dir, counter
 
         for bbx in data['annotation']:
             if not bbx:
-                continue;
+                continue
             #Pascal VOC only supports rectangles.
             if "shape" in bbx and bbx["shape"] != "rectangle":
-                continue;
+                continue
 
             bbx_labels = bbx['label']
             #handle both list of labels or a single label.
@@ -167,19 +185,20 @@ def main():
             "Please specify a valid path to dataturks JSON output file, " + dataturks_JSON_FilePath + " is empty")
         return
 
-    count = 0;
+    count = 0
     success = 0
     for counter, line in enumerate(lines):
         status = convert_to_PascalVOC(line, image_download_dir, pascal_voc_xml_dir, counter)
         if (status):
             success = success + 1
 
-        count+=1;
+        count+=1
         if (count % 10 == 0):
             logging.info(str(count) + " items done ...")
 
     logging.info("Completed: " + str(success) + " items done, " + str(len(lines) - success)  + " items ignored due to errors or for being skipped items.")
-
+    
+    generate_txt() # Generating txt files
 
 def create_arg_parser():
     """"Creates and returns the ArgumentParser object."""
