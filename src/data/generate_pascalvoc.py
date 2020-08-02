@@ -31,8 +31,8 @@ def generate_txt():
         for name in config.train:
             f.write("%s\n" % name)
 
-    with open('data/processed/VOC/ImageSets/Main/test.txt', 'w') as f:
-        for name in config.test:
+    with open('data/processed/VOC/ImageSets/Main/val.txt', 'w') as f:
+        for name in config.val:
             f.write("%s\n" % name)
 
 

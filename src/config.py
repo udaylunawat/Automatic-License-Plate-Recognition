@@ -22,7 +22,7 @@ tf.random.set_random_seed(RANDOM_SEED)
 
 processed_df = pd.read_csv('data/processed/processed.csv')
 
-train_df, test_df = train_test_split(
+train_df, val_df = train_test_split(
   processed_df, 
   test_size=0.2, 
   random_state=RANDOM_SEED
@@ -31,7 +31,7 @@ train_df, test_df = train_test_split(
 
 trainval = [name.split('.')[0] for name in processed_df['image_name']]
 train = [name.split('.')[0] for name in train_df['image_name']]
-test = [name.split('.')[0] for name in test_df['image_name']]
+val = [name.split('.')[0] for name in val_df['image_name']]
 
 
 ANNOTATIONS_FILE = 'data/processed/annotations.csv'
