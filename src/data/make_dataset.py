@@ -8,6 +8,7 @@ import pandas as pd
 import os
 import urllib
 from PIL import Image
+from src import config
 
 def download_data(data):
   '''Downloads car images'''
@@ -84,5 +85,5 @@ if __name__ == '__main__':
     # find .env automagically by walking up directories until it's found, then
     # load up the .env entries as environment variables
     load_dotenv(find_dotenv())
- 
+    
     main()
