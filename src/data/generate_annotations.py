@@ -1,4 +1,5 @@
 from src import config
+import urllib
 
 def pretrained_model_load():
     urllib.request.urlretrieve(config.URL_MODEL, config.PRETRAINED_MODEL)
