@@ -1,7 +1,24 @@
 import pandas as pd
-import pandas as pd
+import numpy as np
+
+import seaborn as sns
+from matplotlib import rc
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
+
+from pylab import rcParams
+from pandas.plotting import register_matplotlib_converters
+
+register_matplotlib_converters()
+
+sns.set(style='whitegrid', palette='muted', font_scale=1.5)
+rcParams['figure.figsize'] = 22, 10
+
 RANDOM_SEED = 42
+np.random.seed(RANDOM_SEED)
+tf.random.set_random_seed(RANDOM_SEED)
+
+
 
 processed_df = pd.read_csv('data/processed/processed.csv')
 
