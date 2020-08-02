@@ -14,12 +14,12 @@ def download_data(data):
 
   dataset = dict()
   dataset["image_name"] = list()
-  dataset["image_width"] = list()
-  dataset["image_height"] = list()
-  dataset["top_x"] = list()
-  dataset["top_y"] = list()
-  dataset["bottom_x"] = list()
-  dataset["bottom_y"] = list()
+#   dataset["image_width"] = list()
+#   dataset["image_height"] = list()
+  dataset["x_min"] = list()
+  dataset["y_min"] = list()
+  dataset["x_max"] = list()
+  dataset["y_max"] = list()
 
   #Downloading images
   counter = 0
@@ -30,12 +30,16 @@ def download_data(data):
       dataset["image_name"].append("{}".format(counter))
       
       data = row["annotation"]
-      dataset["image_width"].append(data[0]["imageWidth"])
-      dataset["image_height"].append(data[0]["imageHeight"])
-      dataset["top_x"].append(data[0]["points"][0]["x"])
-      dataset["top_y"].append(data[0]["points"][0]["y"])
-      dataset["bottom_x"].append(data[0]["points"][1]["x"])
-      dataset["bottom_y"].append(data[0]["points"][1]["y"])
+
+      width = data[0]["imageWidth"]
+      height = data[0]["imageHeight"]
+      
+      # Because the json file provided had percentages of height and width
+      dataset["x_min"].append(int(round(data[0]["points"][0]["x"] * width)))
+      dataset["y_min"].append(int(round(data[0]["points"][0]["y"] * height)))
+      dataset["x_max"].append(int(round(data[0]["points"][1]["x"] * width)))
+      dataset["y_max"].append(int(round(data[0]["points"][1]["y"] * height)))
+      dataset["class_name"].append("license_plate")
       
       counter += 1
       
