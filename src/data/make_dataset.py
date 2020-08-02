@@ -14,12 +14,11 @@ def download_data(data):
 
   dataset = dict()
   dataset["image_name"] = list()
-#   dataset["image_width"] = list()
-#   dataset["image_height"] = list()
   dataset["x_min"] = list()
   dataset["y_min"] = list()
   dataset["x_max"] = list()
   dataset["y_max"] = list()
+  dataset["class_name"] = list()
 
   #Downloading images
   counter = 0
