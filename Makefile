@@ -26,7 +26,7 @@ requirements: test_environment
 	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt --progress-bar off | grep -v 'already satisfied'
 
 ## Make Dataset
-data:	requirements directory_setup download_json serialize_csv rawpreprocess
+data:	requirements directory_setup download_json serialize_csv rawpreprocess pascalvoc
 download_json:	json_7z
 
 
@@ -45,8 +45,11 @@ serialize_csv:
 
 rawpreprocess:
 	$(PYTHON_INTERPRETER) src/data/preprocess.py -i data/raw/ -o data/processed/
+	$(PYTHON_INTERPRETER) src/data/generate_annotations.py
+
+pascalvoc:
 	cp data/raw/Indian_Number_Plates/* data/processed/VOC/JPEGImages
-	$(PYTHON_INTERPRETER) src/data/dataturks_to_PascalVOC.py data/external/Indian_Number_plates.json data/processed/VOC/JPEGImages data/processed/VOC/Annotations
+	$(PYTHON_INTERPRETER) src/data/generate_pascalvoc.py data/external/Indian_Number_plates.json data/processed/VOC/JPEGImages data/processed/VOC/Annotations
 
 ## Train Model
 train: data
