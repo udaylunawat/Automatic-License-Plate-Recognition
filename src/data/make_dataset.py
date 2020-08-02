@@ -8,7 +8,6 @@ import pandas as pd
 import os
 import urllib
 from PIL import Image
-from src import config
 
 def download_data(data):
   '''Downloads car images'''
