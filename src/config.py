@@ -15,10 +15,6 @@ sns.set(style='whitegrid', palette='muted', font_scale=1.5)
 rcParams['figure.figsize'] = 22, 10
 
 RANDOM_SEED = 42
-np.random.seed(RANDOM_SEED)
-tf.random.set_random_seed(RANDOM_SEED)
-
-
 
 processed_df = pd.read_csv('data/processed/processed.csv')
 
