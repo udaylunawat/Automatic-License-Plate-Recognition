@@ -5,6 +5,10 @@ from PIL import Image
 import numpy as np
 import os
 from pyngrok import ngrok
+import easyocr
+reader = easyocr.Reader(['en'])
+
+
 # Code adapted from https://github.com/fizyr/keras-retinanet
 # jasperebrown@gmail.com
 # 2020
@@ -28,14 +32,19 @@ import numpy as np
 import time
 from PIL import Image
 
-# set tf backend to allow memory to grow, instead of claiming everything
 import tensorflow as tf
 
+from keras import backend
+backend.clear_session()
+
+# set tf backend to allow memory to grow, instead of claiming everything
+# import tensorflow as tf
+
+
 def detect(image_path):
+  
   model_path = '/content/Automatic-License-Plate-Recognition/models/inference/plate_inference.h5'
   confidence_cutoff = 0.5 # Detections below this confidence will be ignored
-
-  keras.backend.clear_session()  # For easy reset of notebook state.
 
   def get_session():
       config = tf.ConfigProto()
@@ -99,7 +108,7 @@ def detect(image_path):
       cv2.rectangle(draw, (b[0], b[1]), (b[2], b[3]), color, thickness, cv2.LINE_AA)
 
       if(label > len(labels_to_names)):
-          print("WARNING: Got unknown label, using 'detection' instead")
+          st.write("WARNING: Got unknown label, using 'detection' instead")
           caption = "Detection {:.3f}".format(score)
       else:
           caption = "{} {:.3f}".format(labels_to_names[label], score)
@@ -108,11 +117,18 @@ def detect(image_path):
       cv2.putText(draw, caption, (b[0], b[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
 
   #Write out image
-  draw = Image.fromarray(draw)
+  # draw = Image.fromarray(draw)
+  drawn = cv2.cvtColor(np.array(draw), cv2.COLOR_BGR2RGB)
+
+  crop = cv2.rectangle(np.array(draw), (int(b[0]), int(b[1])), (int(b[2]), int(b[3])), (0, 0, 255), 1)
+  crop = crop[int(b[1]):int(b[3]), int(b[0]):int(b[2])]
+  # crop = (crop * 255).astype(np.uint8)
   # draw.save(image_output_path)
   # print("Model saved at", image_output_path)
-  return cv2.cvtColor(np.array(draw), cv2.COLOR_BGR2RGB)
 
+  text = reader.readtext(crop)
+  plate_text = text[0][1]
+  return drawn, crop, plate_text
 
 def about():
 	st.write(
@@ -153,8 +169,9 @@ def about():
 
 
 def main():
-    st.title("License Plate detection App :sunglasses:")
-    st.write("**Using keras, retinanet and cookiecutter**")
+    st.set_option('deprecation.showfileUploaderEncoding', False)
+    st.title("Indian License Plate detection and recognition :sunglasses:")
+    st.write("**Using Google's Tensorflow, Retinanet, Streamlit and ** :love:")
 
     activities = ["Home", "About"]
     choice = st.sidebar.selectbox("Pick something fun", activities)
@@ -174,13 +191,14 @@ def main():
                 
                 # result_img is the image with rectangle drawn on it (in case there are faces detected)
                 # result_faces is the array with co-ordinates of bounding box(es)
-    			result_img = detect(image_file)
-    			st.image(result_img, use_column_width = True)
-    			st.success("Found plate\n")
+    			result_img, crop, plate_text = detect(image_file)
 
+    			st.image([result_img, crop], use_column_width = True)
+    			st.write("Found plate!!\n", plate_text)
+          
     elif choice == "About":
     	about()
 
-
 if __name__ == "__main__":
+    
     main()
