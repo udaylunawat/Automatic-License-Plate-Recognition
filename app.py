@@ -133,38 +133,7 @@ def detect(image_path):
 def about():
 	st.write(
 		'''
-    # To-do NOW
-    - [ ] Get basic inference asap and complete basic documentation.
-    Try newer & better models later.
-      - [x] Basic inference
-    - [ ] Build basic upload functionality and output functionality to view cropped file in FastAPI
-      - [x] Build it using Streamlit
-      - [ ] Replicate [this](https://github.com/MecraS/play-with-ml)
-    - [x] Proper output without the requirements installation logs
-    - [x] export TF_CPP_MIN_LOG_LEVEL=3
-      - [x] Add this inside script (automate somehow)
-      - [x] Automated using magic command %env
-    - [x] Retinanet - PASCAL VOC format
-      - [x] Use keras-retinanet
-      - [x] Create text files from train_generator and val_generator
-      - [ ] Add this generator to train_test_split generator script or data prep script
-      - [x] Edit voc_classes dictionary in pascal_vc.py  
-      "/content/Automatic-License-Plate-Recognition/keras-retinanet/keras_retinanet/preprocessing/pascal_voc.py"
-      - [ ] Improve this edit process by overriding the dict file
-      - [ ] Add the pascal_voc.py edit part to script
-      - [ ] Add validation loss to Tensorboard
-    - [ ] Add make file documentation
-    - [ ] Inference
-      - [x] Converting snapshot from training model to inference model
-    - [ ] Reference for [dataturks_to_PASCAL_VOC.py](https://gist.github.com/DataTurks/0cc13f59a423a9d4f039225bf4fc8e03#file-dataturks_to_pascalvoc-py)
-      - [ ] Mention in README that it's been modified for use
-    - [ ] Add updated directories & details to README
 
-    # To-do later
-    - [ ]  Update from retina-net to [tf.retinanet](https://github.com/fizyr/tf-retinanet.git)
-    - [ ] YOLO V3 format
-    - [ ] OCR comparison - Keras ocr, GCP vision, amazon textract
-    - [ ] Set global variables for directory names
 		''')
 
 
