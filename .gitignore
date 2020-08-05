@@ -79,6 +79,7 @@ target/
 /data/
 /models/inference/
 /keras-retinanet
+/archive
 
 # Mac OS-specific storage files
 .DS_Store
