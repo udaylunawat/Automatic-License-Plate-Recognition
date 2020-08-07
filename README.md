@@ -61,7 +61,8 @@ Project Organization
     │   ├── features                      <- Fitted and serialized features
     │   ├── models                        <- Trained and serialized models, model predictions, or model summaries
     │   │   ├── snapshots                 <- Saving training snapshots.
-    │   │   └── inference                 <- Converted trained model to an inference model.
+    │   │   ├── inference                 <- Converted trained model to an inference model.
+    │   │   └── TrainingOutput            <- Output logs
     │   └── reports                       <- Generated analyses as HTML, PDF, LaTeX, etc.
     │       └── figures                   <- Generated graphics and figures to be used in reporting
     │
