@@ -1,55 +1,56 @@
-import streamlit as st
-import cv2
-import numpy as np
-import os
-from pyngrok import ngrok
-import time
-import pytesseract
-from PIL import Image,ImageEnhance
-import webbrowser
-
 # Code adapted from https://github.com/fizyr/keras-retinanet
 # udaylunawat@gmail.com
 # 2020
 
+import streamlit as st
+import cv2
+import numpy as np
+import os
+import time
+import pytesseract
+from PIL import Image,ImageEnhance
 
 from keras_retinanet import models
 from keras_retinanet.utils.image import preprocess_image, resize_image
 
 # import miscellaneous modules
-import tensorflow as tf
 from keras import backend as K
-
+from pyngrok import ngrok
+import webbrowser
 #================================= Functions =================================
 
 # load label to names mapping for visualization purposes
 labels_to_names = {0: 'number_plate'}
 
 
-def easy_ocr_test():
-
+def e_OCR(crop):
 	import easyocr
 	reader = easyocr.Reader(['en'])
-	text = reader.readtext(crop)
-	plate_text = text[0][1]
-	
+	ocr_output = reader.readtext(np.array(crop))
+	plate_text = ''
+	for text in ocr_output:
+		plate_text += text[1]
 	return plate_text
 
 
 def OCR(crop_image):
-	# psm 6 - single line license 
-	for psm in range(0,14):
-		for oem in range(0,4):
-			try:
-				custom_config = r'--oem '+str(oem)+'--'+str(psm)+' 6'
-				text_output = pytesseract.image_to_string(crop_image, config=custom_config)
-				print(oem, psm,':',text_output)
-				break
-			except:
-				continue
+	# psm 6 - single line license
+	try:
+		custom_config = r'--oem 1 --psm 1'
+		text_output = pytesseract.image_to_string(crop_image, config=custom_config)
+		print(custom_config,':',text_output)
+	except:
+		pass
 	return text_output
 
-@st.cache(allow_output_mutation=True)
+def cannize_image(our_image):
+	new_img = np.array(our_image.convert('RGB'))
+	img = cv2.cvtColor(new_img,1)
+	img = cv2.GaussianBlur(img, (11, 11), 0)
+	canny = cv2.Canny(img, 100, 150)
+	return canny
+
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def load_detector_model():
 
 	model_path = 'models/inference/plate_inference.h5'
@@ -82,7 +83,7 @@ def load_image(image_path):
 	image = image[:, :, ::-1].copy()
 	return image
 
-@st.cache(suppress_st_warning=True)
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def inference(model, image, scale, session):
 	# Run the inference
 	start = time.time()
@@ -154,7 +155,6 @@ def detector(image_path):
 
 
 #============================ About ==========================
-@st.cache()
 def about():
 	st.write("""
 	## \u26C5 Behind The Scene
@@ -212,23 +212,24 @@ if choice == "Detection":
 	crop = None
 	st.text("""""")
 	# if st.button("Process"):
-	try:
-		
-		result_img, crop = detector(img_file_buffer)
-		st.image(
-			result_img, 
-			caption = 'Annotated with confidence score',
-			width = 500
-			)
-		st.text("""""")
-		
 
-	except:
-		st.error('''
-		Model is not confident enough!
-		\nLower confidence cutoff score from sidebar OR Use any other image.
-		''')
+	if img_file_buffer is not None:
+		try:
+			
+			result_img, crop = detector(img_file_buffer)
+			st.image(
+				result_img, 
+				caption = 'Annotated with confidence score',
+				width = 500
+				)
+			st.text("""""")
+			
 
+		except:
+			st.error('''
+			Model is not confident enough!
+			\nLower confidence cutoff score from sidebar OR Use any other image.
+			''')
 
 
 	if crop is not None:
@@ -236,7 +237,7 @@ if choice == "Detection":
 					Cropped License Plate</h2>", \
 						unsafe_allow_html=True)
 
-		enhance_type = st.sidebar.radio("Enhance Type",["Original","Gray-Scale","Contrast","Brightness","Blurring"])
+		enhance_type = st.sidebar.radio("Enhance Type",["Original","Gray-Scale","Contrast","Brightness","Blurring","Cannize"])
 		st.info(enhance_type)
 		if enhance_type == 'Gray-Scale':
 			temp = np.array(crop.convert('RGB'))
@@ -262,16 +263,34 @@ if choice == "Detection":
 			img = cv2.cvtColor(temp,1)
 			output_image = cv2.GaussianBlur(img,(11,11),blur_rate)
 			st.image(output_image, width = 500, caption = enhance_type)
-			
+		
+		elif enhance_type == 'Cannize':
+			# cannize = st.sidebar.slider("Cannize",0.2,8.0,(1.5))
+			output_image = cannize_image(crop)
+			st.image(output_image, width = 500, caption = enhance_type)
+
 		elif enhance_type == 'Original':
 			output_image = crop
 			st.image(output_image,width = 500, caption = enhance_type)
+		
+		try:
+			tessy_ocr = OCR(output_image)
+			if tessy_ocr!='' or tessy_ocr is not None:
+				st.write("Google's Tesseract OCR: ", tessy_ocr)
+		except:
+			pass
 
-		text_ocr = OCR(output_image)
-		if text_ocr != '':
-			st.success(text_ocr)
-			# st.balloons()
-		# st.write("Found plate!!\n", text_ocr)
+		try:
+			easy_ocr = e_OCR(output_image)
+			st.write("easy OCR: ", easy_ocr)
+			st.balloons()
+		except:
+			pass
+
+
+		# if text_ocr != '':
+		# 	st.success(text_ocr)
+			
 		
 
 		st.text("""""")
