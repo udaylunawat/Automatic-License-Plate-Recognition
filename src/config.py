@@ -16,7 +16,7 @@ rcParams['figure.figsize'] = 22, 10
 
 RANDOM_SEED = 42
 
-processed_df = pd.read_csv('data/processed/processed.csv')
+processed_df = pd.read_csv('data/3_processed/processed.csv')
 
 train_df, val_df = train_test_split(
   processed_df, 
@@ -30,7 +30,7 @@ train = [name.split('.')[0] for name in train_df['image_name']]
 val = [name.split('.')[0] for name in val_df['image_name']]
 
 
-ANNOTATIONS_FILE = 'data/processed/annotations.csv'
-CLASSES_FILE = 'data/processed/classes.csv'
+ANNOTATIONS_FILE = 'data/3_processed/annotations.csv'
+CLASSES_FILE = 'data/3_processed/classes.csv'
 PRETRAINED_MODEL = 'models/snapshots/_pretrained_model.h5'
 URL_MODEL = 'https://github.com/fizyr/keras-retinanet/releases/download/0.5.1/resnet50_coco_best_v2.1.0.h5'

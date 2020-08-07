@@ -24,7 +24,7 @@ def download_data(data):
   counter = 0
   print('\nDownloading car images')
   for index, row in data.iterrows():
-      file_name = "data/raw/"+"Indian_Number_Plates/{}.jpg".format(counter)
+      file_name = "data/0_raw/"+"Indian_Number_Plates/{}.jpg".format(counter)
       
       dataset["image_name"].append("{}".format(counter))
       
@@ -54,9 +54,9 @@ def download_data(data):
 
 
 @click.command()
-@click.option("--input-path", "-i", "input_path", default="data/external/",
+@click.option("--input-path", "-i", "input_path", default="data/1_external/",
     help="Path to json file to be read.")
-@click.option("--output-path", "-o", default="data/raw/",
+@click.option("--output-path", "-o", default="data/0_raw/",
     help="Path to csv file to store the result.")
 
 def main(input_path, output_path):

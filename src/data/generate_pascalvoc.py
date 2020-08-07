@@ -23,15 +23,15 @@ logging.getLogger().setLevel(logging.INFO)
 
 def generate_txt():
 
-    with open('data/processed/VOC/ImageSets/Main/trainval.txt', 'w') as f:
+    with open('data/3_processed/VOC/ImageSets/Main/trainval.txt', 'w') as f:
         for name in config.trainval:
             f.write("%s\n" % name)
 
-    with open('data/processed/VOC/ImageSets/Main/train.txt', 'w') as f:
+    with open('data/3_processed/VOC/ImageSets/Main/train.txt', 'w') as f:
         for name in config.train:
             f.write("%s\n" % name)
 
-    with open('data/processed/VOC/ImageSets/Main/val.txt', 'w') as f:
+    with open('data/3_processed/VOC/ImageSets/Main/val.txt', 'w') as f:
         for name in config.val:
             f.write("%s\n" % name)
 

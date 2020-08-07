@@ -2,15 +2,15 @@ import click
 import pandas as pd
 
 @click.command()
-@click.option("--input-path", "-i", default = "data/raw/", required=True,
+@click.option("--input-path", "-i", default = "data/0_raw/", required=True,
     help="Path to csv file to be processed.",
 )
-@click.option("--output-path", "-o", default="data/preprocessed/",
+@click.option("--output-path", "-o", default="data/3_preprocessed/",
     help="Path to csv file to store the result.")
 
 def main(input_path, output_path):
-    """ Runs data processing scripts to read raw data (../raw) and convert it into
-        processed csv file (../processed) to be used for further analysis.
+    """ Runs data processing scripts to read raw data (../0_raw) and convert it into
+        processed csv file (../3_processed) to be used for further analysis.
     """
     print("Preprocessing indian_license_plate.csv")
     df = pd.read_csv(input_path+"indian_license_plates.csv", dtype={'image_name':str})

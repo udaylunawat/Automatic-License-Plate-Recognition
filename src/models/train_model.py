@@ -14,7 +14,7 @@ from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.optimizers import Adam
 
-df = pd.read_csv('data/processed/processed.csv')
+df = pd.read_csv('data/3_processed/processed.csv')
 
 WIDTH = 224
 HEIGHT = 224
@@ -73,4 +73,4 @@ history = model.fit(train_generator,
     epochs=30)
 
 print("Saving Model as model.h5 in models directory")
-model.save('models/model.h5')
+model.save('output/models/base_model.h5')

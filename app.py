@@ -50,14 +50,14 @@ def cannize_image(our_image):
 	canny = cv2.Canny(img, 100, 150)
 	return canny
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True)
+# @st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def load_detector_model():
 
-	model_path = 'models/inference/plate_inference.h5'
+	model_path = 'output/models/inference/plate_inference.h5'
 
 	# load retinanet model
 	print("Loading Model: {}".format(model_path))
-	model = models.load_model(model_path, backbone_name='resnet50');
+	model = models.load_model(model_path, backbone_name='resnet50')
 
 	#Check that it's been converted to an inference model
 	try:
@@ -83,7 +83,7 @@ def load_image(image_path):
 	image = image[:, :, ::-1].copy()
 	return image
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True)
+# @st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def inference(model, image, scale, session):
 	# Run the inference
 	start = time.time()
