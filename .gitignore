@@ -76,7 +76,10 @@ target/
 .ipynb_checkpoints/
 
 # exclude data from source control by default
-/data/
+/data/0_raw/*
+/data/1_external/*
+/data/2_interim/*
+/data/3_processed/*
 /output/models/inference/
 /keras-retinanet
 /archive
