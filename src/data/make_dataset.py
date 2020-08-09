@@ -54,7 +54,7 @@ def download_data(data):
 
 
 @click.command()
-@click.option("--input-path", "-i", "input_path", default="data/1_external/",
+@click.option("--input-path", "-i", "input_path", default="data/0_raw/",
     help="Path to json file to be read.")
 @click.option("--output-path", "-o", default="data/0_raw/",
     help="Path to csv file to store the result.")

@@ -5,7 +5,7 @@ import pandas as pd
 @click.option("--input-path", "-i", default = "data/0_raw/", required=True,
     help="Path to csv file to be processed.",
 )
-@click.option("--output-path", "-o", default="data/3_preprocessed/",
+@click.option("--output-path", "-o", default="data/3_processed/",
     help="Path to csv file to store the result.")
 
 def main(input_path, output_path):

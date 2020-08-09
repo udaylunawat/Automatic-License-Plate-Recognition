@@ -22,6 +22,7 @@ endif
 
 ## Install Python Dependencies
 requirements: test_environment
+	sudo apt install p7zip-full p7zip-rar
 	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel --progress-bar off
 	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt --progress-bar off | grep -v 'already satisfied'
 
@@ -36,15 +37,15 @@ directory_setup:
 	mkdir -p output/models/TrainingOutput output/models/snapshots outputmodels/inference
 
 json_7z:
-	wget $(JSON_DOWNLOAD_URL) -O data/1_external/Indian_Number_plates.json -q --show-progress
-	wget $(IMAGES_ZIP) -P data/1_external -q --show-progress
-	7z x data/1_external/Indian_Number_Plates.7z -odata/raw/Indian_Number_Plates -y > nul
+	wget -c $(JSON_DOWNLOAD_URL) -O data/0_raw/Indian_Number_plates.json -q --show-progress
+	wget -c $(IMAGES_ZIP) -P data/0_raw -q --show-progress
+	7z x data/0_raw/Indian_Number_Plates.7z -odata/0_raw/Indian_Number_Plates y
 
 serialize_csv:
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py
 
 rawpreprocess:
-	$(PYTHON_INTERPRETER) src/data/preprocess.py -i data/raw/ -o data/processed/
+	$(PYTHON_INTERPRETER) src/data/preprocess.py -i data/0_raw/ -o data/3_processed/
 	$(PYTHON_INTERPRETER) src/data/generate_annotations.py
 
 pascalvoc:
