@@ -39,7 +39,7 @@ directory_setup:
 json_7z:
 	wget -c $(JSON_DOWNLOAD_URL) -O data/0_raw/Indian_Number_plates.json -q --show-progress
 	wget -c $(IMAGES_ZIP) -P data/0_raw -q --show-progress
-	7z x -y data/0_raw/Indian_Number_Plates.7z -odata/0_raw/Indian_Number_Plates y
+	7z x -y data/0_raw/Indian_Number_Plates.7z -odata/0_raw/Indian_Number_Plates
 
 serialize_csv:
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py
