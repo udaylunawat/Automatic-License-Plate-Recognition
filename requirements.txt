@@ -12,4 +12,4 @@ python-dotenv>=0.5.1
 pyngrok
 streamlit
 sklearn
-# easyocr
+easyocr

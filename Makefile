@@ -34,7 +34,7 @@ download_json:	json_7z
 directory_setup:
 	mkdir -p data/0_raw data/1_external data/2_interim data/3_processed data/0_raw/Indian_Number_Plates
 	mkdir -p data/3_processed/VOC/Annotations data/3_processed/VOC/JPEGImages data/3_processed/VOC/ImageSets/Main
-	mkdir -p output/models/TrainingOutput output/models/snapshots outputmodels/inference
+	mkdir -p output/models/TrainingOutput output/models/snapshots output/models/inference
 
 json_7z:
 	wget -c $(JSON_DOWNLOAD_URL) -O data/0_raw/Indian_Number_plates.json -q --show-progress
@@ -50,7 +50,7 @@ rawpreprocess:
 
 pascalvoc:
 	cp data/0_raw/Indian_Number_Plates/* data/3_processed/VOC/JPEGImages
-	$(PYTHON_INTERPRETER) src/data/generate_pascalvoc.py data/1_external/Indian_Number_plates.json data/3_processed/VOC/JPEGImages data/3_processed/VOC/Annotations
+	$(PYTHON_INTERPRETER) src/data/generate_pascalvoc.py data/0_raw/Indian_Number_plates.json data/3_processed/VOC/JPEGImages data/3_processed/VOC/Annotations
 
 ## Train Model
 train: data

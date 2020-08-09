@@ -81,6 +81,8 @@ target/
 /data/2_interim/*
 /data/3_processed/*
 /output/models/inference/
+/output/models/snapshots/
+/output/models/TrainingOutput/
 /keras-retinanet
 /archive
 

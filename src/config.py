@@ -32,5 +32,5 @@ val = [name.split('.')[0] for name in val_df['image_name']]
 
 ANNOTATIONS_FILE = 'data/3_processed/annotations.csv'
 CLASSES_FILE = 'data/3_processed/classes.csv'
-PRETRAINED_MODEL = 'models/snapshots/_pretrained_model.h5'
+PRETRAINED_MODEL = 'output/models/snapshots/_pretrained_model.h5'
 URL_MODEL = 'https://github.com/fizyr/keras-retinanet/releases/download/0.5.1/resnet50_coco_best_v2.1.0.h5'
