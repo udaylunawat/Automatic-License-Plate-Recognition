@@ -13,3 +13,4 @@ pyngrok
 streamlit
 sklearn
 easyocr
+keras_retinanet
