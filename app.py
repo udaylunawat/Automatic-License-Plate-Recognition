@@ -19,7 +19,7 @@ import pytesseract
 from PIL import Image,ImageEnhance
 import random
 # Machine Learning frameworks
-from keras import backend as K
+# from keras import backend as K
 from keras_retinanet import models
 from keras_retinanet.utils.image import preprocess_image, resize_image
 
@@ -90,8 +90,8 @@ def load_detector_model():
     except:
         print("Model is likely already an inference model")
     # model._make_predict_function()
-    session = K.get_session()
-    return model, session
+    # session = K.get_session()
+    return model # session
 
 def image_preprocessing(image):
     # copy to draw on
@@ -109,15 +109,16 @@ def load_image(image_path):
     return image
 
 @st.cache(suppress_st_warning=True, allow_output_mutation=True)
-def inference(model, image, scale, session):
+def inference(model, image, scale): # session
     # Run the inference
     start = time.time()
 
     # set the modified tf session as backend in keras
     # K.set_session(session)
-    with session.as_default():
-        with session.graph.as_default():
-            boxes, scores, labels = model.predict_on_batch(np.expand_dims(image, axis=0))
+    # with session.as_default():
+    #     with session.graph.as_default():
+
+    boxes, scores, labels = model.predict_on_batch(np.expand_dims(image, axis=0))
     
     processing_time = time.time() - start
     st.error("Processing time: {0:.3f} seconds!!".format(processing_time))
@@ -161,7 +162,7 @@ def detector(image_path):
     image = load_image(image_path)
     
     image, draw, scale = image_preprocessing(image)
-    boxes, scores, labels = inference(model, image, scale, session)
+    boxes, scores, labels = inference(model, image, scale) # session
     b, draw = draw_detections(draw, boxes, scores, labels)
 
     #Write out image
@@ -262,7 +263,7 @@ if choice == "Detection and OCR" and image:
     st.text("""""")
 
     # if st.button("Process"):
-    model, session = load_detector_model()
+    model = load_detector_model() # session
     
     if image:
         try:
