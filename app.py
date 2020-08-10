@@ -1,6 +1,12 @@
-# Code adapted from https://github.com/fizyr/keras-retinanet
-# udaylunawat@gmail.com
-# 2020
+"""This is an object detection and ocr app that enables a user to
+
+- select a detection model (in the sidebar),
+- upload an image (in the main area)
+
+and get a license plate detection in return.
+
+This app is inspired by the awesome [imageNet](https://github.com/iamatulsingh/imageNet-streamlit)
+application developed by [Atul Kumar Singh](https://github.com/iamatulsingh)."""
 
 import streamlit as st
 import cv2
@@ -11,7 +17,7 @@ from os.path import isfile, join
 import time
 import pytesseract
 from PIL import Image,ImageEnhance
-
+import random
 # Machine Learning frameworks
 from keras import backend as K
 from keras_retinanet import models
@@ -21,20 +27,23 @@ from keras_retinanet.utils.image import preprocess_image, resize_image
 from pyngrok import ngrok
 import webbrowser
 
-#================================= Functions =================================
-
 # load label to names mapping for visualization purposes
 labels_to_names = {0: 'number_plate'}
+#================================= Functions =================================
 
 
 def try_all_OCR(crop_image):
-	for psm in range(0,14):
-		for oem in range(0,4):
+	progress_bar = st.progress(0)
+	counter = 0
+	for oem in range(0,4):
+		for psm in range(0,14):
+			counter += 1
 			try:
 				custom_config = r'--oem {} --psm {}'.format(oem,psm)
 				text_output = pytesseract.image_to_string(crop_image, config=custom_config)
 				print(custom_config,':',text_output)
 				st.write(custom_config,':',text_output)
+				progress_bar.progress(counter/(4*14))
 			except :
 				continue
 
@@ -111,7 +120,7 @@ def inference(model, image, scale, session):
 			boxes, scores, labels = model.predict_on_batch(np.expand_dims(image, axis=0))
 	
 	processing_time = time.time() - start
-	st.warning("Processing time: {0:.3f} seconds!!".format(processing_time))
+	st.error("Processing time: {0:.3f} seconds!!".format(processing_time))
 	# correct for image scale
 	boxes /= scale
 	return boxes, scores, labels
@@ -193,18 +202,21 @@ def about():
 
 #======================== Time To See The Magic ===========================
 
+crop, image = None, None
+img_size, crop_size = 600, 400
 
 st.set_option('deprecation.showfileUploaderEncoding', False)
-
-st.title("Indian ALPR")
-st.subheader("**Made using Google's Tensorflow, Retinanet, Streamlit and :heart:**")
+st.markdown("<h1 style='text-align: center; color: black;'>Indian ALPR System using Deep Learning</h1>", unsafe_allow_html=True)
+st.info(__doc__)
+# st.markdown("<h1 style='text-align: center; color: black;'>Automatic License Plate Recognition</h1>", unsafe_allow_html=True)
+# st.markdown("<h2 style='text-align: center; color: black;'>Made with Google's Tensorflow</h2>", unsafe_allow_html=True)
 st.write("""""")
-st.markdown("Open sidebar to upload images and add enhancements to test OCR!\
-		\n\nNote, OCR results change with different enhancements.")
+
+st.markdown("👈 Please Open sidebar to upload images")
 activities = ["Detection and OCR", "About"]
 choice = st.sidebar.selectbox("Select Task", activities)
 
-import random
+
 samplefiles = sorted([sample for sample in listdir('data/sample_images')])
 radio = st.sidebar.radio("Choose existing sample or try your own:",('Choose existing', 'Upload'))
 if radio == 'Choose existing':
@@ -219,10 +231,16 @@ else:
 	img_file_buffer = st.sidebar.file_uploader("Upload image", type=['jpeg', 'png', 'jpg', 'webp'], multiple_files = True)
 	st.text("""""")
 	IMAGE_PATH = img_file_buffer
-	image = Image.open(img_file_buffer)
+	try:
+		image = Image.open(img_file_buffer)
+	except:
+		pass
+
+	if image == None:
+		st.sidebar.success("Upload Image!")
 	imageselect = None
 
-if choice == "Detection and OCR":
+if choice == "Detection and OCR" and image:
 	
 	st.sidebar.text("""
 		Preview 👀 Of Selected Image!
@@ -240,7 +258,7 @@ if choice == "Detection and OCR":
 		# Detections below this confidence will be ignored
 		confidence_cutoff = st.sidebar.slider("Cutoff",0.0,1.0,(0.5))
 
-	crop = None
+	
 	st.text("""""")
 
 	# if st.button("Process"):
@@ -249,10 +267,11 @@ if choice == "Detection and OCR":
 	if image:
 		try:
 			annotated_image, score, draw, b = detector(IMAGE_PATH)
+			st.subheader("License Plate Detection!")
 			st.image(
 				annotated_image, 
 				caption = 'Annotated Image with confidence score: {0:.2f}'.format(score),
-				width = 400)
+				width = img_size)
 			crop = cropped_image(draw, b)
 		except:
 			st.error('''
@@ -264,75 +283,81 @@ if choice == "Detection and OCR":
 
 
 		if crop is not None:
-			st.header("Cropped License Plate")
+			st.subheader("Cropped License Plate")
 
 			enhance_type = st.sidebar.radio("Enhance Type",["Original","Gray-Scale","Contrast","Brightness","Blurring","Cannize"])
 
 
 			if enhance_type == 'Original':
 				output_image = crop
-				st.image(output_image,width = 300, caption = enhance_type)
+				st.image(output_image,width = crop_size, caption = enhance_type)
 
 			elif enhance_type == 'Gray-Scale':
 				temp = np.array(crop.convert('RGB'))
 				# temp = cv2.cvtColor(temp,1)
 				output_image = cv2.cvtColor(temp,cv2.COLOR_BGR2GRAY)
-				st.image(output_image, width = 300, caption = enhance_type)
+				st.image(output_image, width = crop_size, caption = enhance_type)
 
 			elif enhance_type == 'Contrast':
 				c_rate = st.sidebar.slider("Contrast",0.2,8.0,(3.5))
 				enhancer = ImageEnhance.Contrast(crop)
 				output_image = enhancer.enhance(c_rate)
-				st.image(output_image,width = 300, caption = enhance_type)
+				st.image(output_image,width = crop_size, caption = enhance_type)
 
 			elif enhance_type == 'Brightness':
 				c_rate = st.sidebar.slider("Brightness",0.2,8.0,(1.5))
 				enhancer = ImageEnhance.Brightness(crop)
 				output_image = enhancer.enhance(c_rate)
-				st.image(output_image, width = 300, caption = enhance_type)
+				st.image(output_image, width = crop_size, caption = enhance_type)
 
 			elif enhance_type == 'Blurring':
 				temp = np.array(crop.convert('RGB'))
 				blur_rate = st.sidebar.slider("Blur",0.2,8.0,(1.5))
 				img = cv2.cvtColor(temp,1)
 				output_image = cv2.GaussianBlur(img,(11,11),blur_rate)
-				st.image(output_image, width = 300, caption = enhance_type)
+				st.image(output_image, width = crop_size, caption = enhance_type)
 			
 			elif enhance_type == 'Cannize':
 				# cannize = st.sidebar.slider("Cannize",0.2,8.0,(1.5))
 				output_image = cannize_image(crop)
-				st.image(output_image, width = 300, caption = enhance_type)
+				st.image(output_image, width = crop_size, caption = enhance_type)
 
-
-			if st.button('Try OCR'):
+			st.text("""""")
+			st.subheader("Optical Character Recognition (OCR)")
+			st.markdown("Note: Here, OCR is performed on the enhanced cropped images.")
+			st.text("""""")
+			OCR_type = st.sidebar.radio("OCR Mode",["Google's Tesseract OCR","easy_OCR","Secret Combo All-out Attack!!"])
+			if st.button('Recognize Characters!!'):
 				st.text("""""")
 
-				try:
-					tessy_ocr = OCR(output_image)
-					if tessy_ocr!='' and tessy_ocr is not None:
-						st.write("Google's Tesseract OCR: ", tessy_ocr)
-					else:
-						st.write("Google's Tesseract OCR Failed! :sob:")
-				except:
-					pass
+				if OCR_type == "Google's Tesseract OCR":
+					try:
+						tessy_ocr = OCR(output_image)
+						if tessy_ocr!='' and tessy_ocr is not None:
+							st.write("Google's Tesseract OCR: ", tessy_ocr)
+						else:
+							st.write("Google's Tesseract OCR Failed! :sob:")
+					except:
+						pass
 
-				try:
-					easy_ocr = e_OCR(output_image)
-					st.write("easy OCR: ", easy_ocr)
-					st.balloons()
-				except:
-					pass
+				elif OCR_type == "easy_OCR":	
+					try:
+						easy_ocr = e_OCR(output_image)
+						st.write("easy OCR: ", easy_ocr)
+						st.balloons()
+					except:
+						st.write("Easy OCR Failed or not installed! :sob:")
 
-
+				elif OCR_type == "Secret Combo All-out Attack!!":
+					st.text("""""")
+					try_all_OCR(output_image)
 				# if text_ocr != '':
 				# 	st.success(text_ocr)
-			st.text("""""")
-			if st.button('MEGA OCR Combo attack!!'):
-				try_all_OCR(output_image)
+			
 		
-
+		
 		st.text("""""")
-		st.write("Go to the About section from the sidebar to learn more about this project.")
+		st.subheader("Go to the About section from the sidebar to learn more about this project!")
 
 elif choice == "About":
 	about()
