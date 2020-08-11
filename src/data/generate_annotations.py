@@ -1,4 +1,4 @@
-from src.config import PRETRAINED_MODEL, URL_MODEL, ANNOTATIONS_FILE, train_df
+from src.config import PRETRAINED_MODEL, URL_MODEL, ANNOTATIONS_FILE, CLASSES_FILE, train_df
 import urllib
 import os
 
@@ -16,7 +16,7 @@ def annot_classes_generator():
     train_df_cpy.to_csv(ANNOTATIONS_FILE, index=False, header=False)
     
     classes = set(['license_plate'])
-    with open(config.CLASSES_FILE, 'w') as f:
+    with open(CLASSES_FILE, 'w') as f:
         for i, line in enumerate(sorted(classes)):
             f.write('{},{}\n'.format(line,i))
 
