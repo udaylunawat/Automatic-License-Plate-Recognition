@@ -26,6 +26,10 @@ from keras_retinanet.utils.image import preprocess_image, resize_image
 from pyngrok import ngrok
 import webbrowser
 
+# https://github.com/keras-team/keras/issues/13353#issuecomment-545459472
+import keras.backend.tensorflow_backend as tb
+tb._SYMBOLIC_SCOPE.value = True
+
 # load label to names mapping for visualization purposes
 labels_to_names = {0: 'number_plate'}
 #================================= Functions =================================
