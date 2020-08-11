@@ -3,9 +3,10 @@ import urllib
 
 def pretrained_model_load():
     if os.path.exists(PRETRAINED_MODEL):
-        break
-    urllib.request.urlretrieve(URL_MODEL, PRETRAINED_MODEL)
-    print('Downloaded pretrained model to ' + PRETRAINED_MODEL)
+        print('Model already downloaded, skipping download.')
+    else:
+        urllib.request.urlretrieve(URL_MODEL, PRETRAINED_MODEL)
+        print('Downloaded pretrained model to ' + PRETRAINED_MODEL)
 
 
 def annot_classes_generator():
