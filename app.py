@@ -1,12 +1,11 @@
-"""This is an object detection and ocr app that enables a user to
+"""This is an Object detection and Optical Character Recognition(OCR) app that enables a user to
 
-- select a detection model (in the sidebar),
-- upload an image (in the main area)
+- Select or upload an image (in the side bar)
+- Get a annotated and cropped license plate image (in the main area)
+- Play around with Image enhance options (OpenCV)
+- Get OCR Prediction using various options
 
-and get a license plate detection in return.
-
-This app is inspired by the awesome [imageNet](https://github.com/iamatulsingh/imageNet-streamlit)
-application developed by [Atul Kumar Singh](https://github.com/iamatulsingh)."""
+"""
 
 import streamlit as st
 import cv2
@@ -31,7 +30,7 @@ import webbrowser
 labels_to_names = {0: 'number_plate'}
 #================================= Functions =================================
 
-
+@st.cache()
 def try_all_OCR(crop_image):
     progress_bar = st.progress(0)
     counter = 0
@@ -41,8 +40,7 @@ def try_all_OCR(crop_image):
             try:
                 custom_config = r'--oem {} --psm {}'.format(oem,psm)
                 text_output = pytesseract.image_to_string(crop_image, config=custom_config)
-                print(custom_config,':',text_output)
-                st.write(custom_config,':',text_output)
+                st.warning(custom_config+':'+text_output)
                 progress_bar.progress(counter/(4*14))
             except :
                 continue
@@ -78,7 +76,7 @@ def cannize_image(our_image):
 @st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def load_detector_model():
 
-    model_path = 'output/models/inference/plate_inference.h5'
+    model_path = 'output/models/inference/plate_inference_tf2.h5'
 
     # load retinanet model
     print("Loading Model: {}".format(model_path))
@@ -89,9 +87,7 @@ def load_detector_model():
         model = models.convert_model(model)
     except:
         print("Model is likely already an inference model")
-    # model._make_predict_function()
-    # session = K.get_session()
-    return model # session
+    return model 
 
 def image_preprocessing(image):
     # copy to draw on
@@ -102,7 +98,7 @@ def image_preprocessing(image):
     image = preprocess_image(image)
     image, scale = resize_image(image)
     return image, draw, scale
-    
+
 def load_image(image_path):
     image = np.asarray(Image.open(image_path).convert('RGB'))
     image = image[:, :, ::-1].copy()
@@ -113,11 +109,6 @@ def inference(model, image, scale): # session
     # Run the inference
     start = time.time()
 
-    # set the modified tf session as backend in keras
-    # K.set_session(session)
-    # with session.as_default():
-    #     with session.graph.as_default():
-
     boxes, scores, labels = model.predict_on_batch(np.expand_dims(image, axis=0))
     
     processing_time = time.time() - start
@@ -125,6 +116,7 @@ def inference(model, image, scale): # session
     # correct for image scale
     boxes /= scale
     return boxes, scores, labels
+
 
 def draw_detections(draw, boxes, scores, labels):
 
@@ -156,6 +148,7 @@ def draw_detections(draw, boxes, scores, labels):
             st.write("No plate detected")
 
     return b, draw
+
 
 def detector(image_path):
 
@@ -263,24 +256,24 @@ if choice == "Detection and OCR" and image:
     st.text("""""")
 
     # if st.button("Process"):
-    model = load_detector_model() # session
+    model = load_detector_model()
     
     if image:
         try:
-            annotated_image, score, draw, b = detector(IMAGE_PATH)
+            with st.spinner('Wait for it...'):
+                annotated_image, score, draw, b = detector(IMAGE_PATH)
+                time.sleep(3)
             st.subheader("License Plate Detection!")
             st.image(
                 annotated_image, 
                 caption = 'Annotated Image with confidence score: {0:.2f}'.format(score),
                 width = img_size)
             crop = cropped_image(draw, b)
-        except:
+        except TypeError:
             st.error('''
             Model is not confident enough!
             \nTry lowering the confidence cutoff score from sidebar OR Use any other image.
             ''')
-        
-        # st.text()
 
 
         if crop is not None:
@@ -335,16 +328,16 @@ if choice == "Detection and OCR" and image:
                     try:
                         tessy_ocr = OCR(output_image)
                         if tessy_ocr!='' and tessy_ocr is not None:
-                            st.write("Google's Tesseract OCR: ", tessy_ocr)
+                            st.success("Google's Tesseract OCR: " + tessy_ocr)
                         else:
-                            st.write("Google's Tesseract OCR Failed! :sob:")
+                            st.error("Google's Tesseract OCR Failed! :sob:")
                     except:
                         pass
 
                 elif OCR_type == "easy_OCR":	
                     try:
                         easy_ocr = e_OCR(output_image)
-                        st.write("easy OCR: ", easy_ocr)
+                        st.success("easy OCR: " + easy_ocr)
                         st.balloons()
                     except:
                         st.write("Easy OCR Failed or not installed! :sob:")

@@ -10,7 +10,7 @@ PROFILE = default
 PYTHON_INTERPRETER = python3
 JSON_DOWNLOAD_URL = https://www.dropbox.com/s/8netfite5znq6o4/Indian_Number_plates.json
 IMAGES_ZIP = https://www.dropbox.com/s/k3mhm1kz192bwue/Indian_Number_Plates.7z
-INFERENCE = https://storage.googleapis.com/dracarys3_bucket/license%20plate/ALPR/retinanet_inference/plate_inference.h5
+INFERENCE = https://storage.googleapis.com/dracarys3_bucket/license%20plate/ALPR/retinanet_inference/plate_inference_tf2_2.h5
 ifeq (,$(shell which conda))
 HAS_CONDA=False
 else
@@ -23,10 +23,10 @@ endif
 
 ## Install Python Dependencies
 requirements: test_environment
-	apt install p7zip-full p7zip-rar
-	apt install tesseract-ocr
-	apt install libtesseract-dev
-	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel --progress-bar off
+	sudo apt install p7zip-full p7zip-rar
+	sudo apt install tesseract-ocr
+	sudo apt install libtesseract-dev
+	$(PYTHON_INTERPRETER) -m pip install pip setuptools wheel --progress-bar off
 	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt --progress-bar off | grep -v 'already satisfied'
 
 ## Make Dataset
@@ -60,7 +60,7 @@ train: data
 	$(PYTHON_INTERPRETER) src/models/train_model.py
 
 inference_download:
-	wget -c $(INFERENCE) -O output/models/inference/plate_inference.h5 -q --show-progress
+	wget -c $(INFERENCE) -O output/models/inference/plate_inference_tf2.h5 -q --show-progress
 
 ## Delete all compiled Python files
 clean:
