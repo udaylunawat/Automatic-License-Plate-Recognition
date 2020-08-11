@@ -1,5 +1,6 @@
-from src.config import PRETRAINED_MODEL, URL_MODEL
+from src.config import PRETRAINED_MODEL, URL_MODEL, ANNOTATIONS_FILE, train_df
 import urllib
+import os
 
 def pretrained_model_load():
     if os.path.exists(PRETRAINED_MODEL):
@@ -10,9 +11,9 @@ def pretrained_model_load():
 
 
 def annot_classes_generator():
-    train_df = config.train_df.copy()
-    train_df.image_name = train_df.image_name.apply(lambda x: 'VOC/JPEGImages/'+x)
-    train_df.to_csv(config.ANNOTATIONS_FILE, index=False, header=False)
+    train_df_cpy = train_df.copy()
+    train_df_cpy.image_name = train_df_cpy.image_name.apply(lambda x: 'VOC/JPEGImages/'+x)
+    train_df_cpy.to_csv(ANNOTATIONS_FILE, index=False, header=False)
     
     classes = set(['license_plate'])
     with open(config.CLASSES_FILE, 'w') as f:
