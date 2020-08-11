@@ -1,9 +1,11 @@
-from src import config
+from src.config import PRETRAINED_MODEL, URL_MODEL
 import urllib
 
 def pretrained_model_load():
-    urllib.request.urlretrieve(config.URL_MODEL, config.PRETRAINED_MODEL)
-    print('Downloaded pretrained model to ' + config.PRETRAINED_MODEL)
+    if os.path.exists(PRETRAINED_MODEL):
+        break
+    urllib.request.urlretrieve(URL_MODEL, PRETRAINED_MODEL)
+    print('Downloaded pretrained model to ' + PRETRAINED_MODEL)
 
 
 def annot_classes_generator():
