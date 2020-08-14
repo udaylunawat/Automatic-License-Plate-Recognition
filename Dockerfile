@@ -23,4 +23,5 @@ RUN make retinanet_source
 
 EXPOSE 8080
 
-CMD streamlit run --server.port 8080 --server.enableCORS false app.py 
+# removed --server.enableCORS false
+CMD streamlit run --server.port 8080 app.py  
