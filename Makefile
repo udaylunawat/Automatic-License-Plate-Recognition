@@ -23,9 +23,12 @@ endif
 
 ## Install Python Dependencies
 requirements: test_environment
-	sudo apt install p7zip-full p7zip-rar
-	sudo apt install tesseract-ocr
-	sudo apt install libtesseract-dev
+	apt-get install software-properties-common
+	add-apt-repository universe
+	apt update
+	apt-get install p7zip-full p7zip-rar
+	apt-get install tesseract-ocr
+	apt-get install libtesseract-dev
 	$(PYTHON_INTERPRETER) -m pip install pip setuptools wheel --progress-bar off
 	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt --progress-bar off | grep -v 'already satisfied'
 
