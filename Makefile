@@ -7,7 +7,7 @@
 PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 BUCKET = [OPTIONAL] your-bucket-for-syncing-data (do not include 's3://')
 PROFILE = default
-PYTHON_INTERPRETER = python3
+PYTHON_INTERPRETER = python
 JSON_DOWNLOAD_URL = https://www.dropbox.com/s/8netfite5znq6o4/Indian_Number_plates.json
 IMAGES_ZIP = https://www.dropbox.com/s/k3mhm1kz192bwue/Indian_Number_Plates.7z
 INFERENCE = https://storage.googleapis.com/dracarys3_bucket/ALPR/license_plate/ALPR/retinanet_inference/plate_inference_tf2_2.h5
@@ -23,14 +23,11 @@ endif
 
 ## Install Python Dependencies
 requirements: test_environment
-	apt-get install software-properties-common
-	add-apt-repository universe
-	apt update
-	apt-get install p7zip-full p7zip-rar
-	apt-get install tesseract-ocr
-	apt-get install libtesseract-dev
+	apt-get -y install p7zip-full
+	apt-get -y install tesseract-ocr
+	apt-get -y install libtesseract-dev
 	$(PYTHON_INTERPRETER) -m pip install pip setuptools wheel --progress-bar off
-	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt --progress-bar off | grep -v 'already satisfied'
+	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
 
 ## Make Dataset
 data:	requirements directory_setup download_json serialize_csv rawpreprocess pascalvoc
