@@ -2,6 +2,11 @@ FROM conda/miniconda3
 RUN apt-get update  -y
 RUN apt-get upgrade -y
 RUN apt-get -y install wget
+# Packages for make
+RUN apt-get update && \
+    apt-get -y install build-essential \
+    libsm6 libxext6 libxrender-dev libgl1-mesa-glx \
+    software-properties-common
 RUN add-apt-repository ppa:alex-p/tesseract-ocr
 
 # setting work directory and copying content
@@ -9,10 +14,7 @@ WORKDIR /app
 ADD requirements.txt /app/requirements.txt
 ADD . /app
 
-# Packages for make
-RUN apt-get update && \
-    apt-get -y install build-essential \
-    libsm6 libxext6 libxrender-dev libgl1-mesa-glx
+
 
 
 RUN	apt-get -y install p7zip-full
