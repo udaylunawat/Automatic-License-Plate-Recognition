@@ -66,7 +66,7 @@ retinanet_source:
 	git clone https://github.com/udaylunawat/keras-retinanet.git
 	$(PYTHON_INTERPRETER) -m pip install keras-retinanet/.
 	cd keras-retinanet
-	$(PYTHON_INTERPRETER) -m setup.py build_ext --inplace
+	$(PYTHON_INTERPRETER) setup.py build_ext --inplace
 	cd ..
 
 ## Delete all compiled Python files
