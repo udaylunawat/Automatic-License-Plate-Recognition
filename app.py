@@ -77,7 +77,7 @@ def cannize_image(our_image):
     canny = cv2.Canny(img, 100, 150)
     return canny
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True)
+@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=True)
 def load_detector_model():
 
     model_path = 'output/models/inference/plate_inference_tf2.h5'
@@ -108,7 +108,7 @@ def load_image(image_path):
     image = image[:, :, ::-1].copy()
     return image
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True)
+@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=True)
 def inference(model, image, scale): # session
     # Run the inference
     start = time.time()
@@ -210,7 +210,7 @@ st.info(__doc__)
 # st.markdown("<h2 style='text-align: center; color: black;'>Made with Google's Tensorflow</h2>", unsafe_allow_html=True)
 st.write("""""")
 
-st.markdown("👈 Please Open sidebar to upload images")
+st.markdown("👆 Please Open sidebar to upload images")
 activities = ["Detection and OCR", "About"]
 choice = st.sidebar.selectbox("Select Task", activities)
 
@@ -247,7 +247,7 @@ if choice == "Detection and OCR" and image:
     if image is not None:
         st.sidebar.image(
             image,
-            width = 250,
+            use_column_width=True,
             caption = 'Original Image'
         )
 
@@ -322,10 +322,10 @@ if choice == "Detection and OCR" and image:
 
             st.text("""""")
             st.subheader("Optical Character Recognition (OCR)")
-            st.markdown("Note: Here, OCR is performed on the enhanced cropped images.")
+            st.warning("Note: Here, OCR is performed on the enhanced cropped images.")
             st.text("""""")
             OCR_type = st.sidebar.radio("OCR Mode",["Google's Tesseract OCR","easy_OCR","Secret Combo All-out Attack!!"])
-            if st.button('Recognize Characters!!'):
+            if st.button('Recognize Characters !!'):
                 st.text("""""")
 
                 if OCR_type == "Google's Tesseract OCR":
