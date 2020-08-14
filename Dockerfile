@@ -2,6 +2,7 @@ FROM conda/miniconda3
 RUN apt-get update  -y
 RUN apt-get upgrade -y
 RUN apt-get -y install wget
+RUN add-apt-repository ppa:alex-p/tesseract-ocr
 
 # setting work directory and copying content
 WORKDIR /app
@@ -12,6 +13,11 @@ ADD . /app
 RUN apt-get update && \
     apt-get -y install build-essential \
     libsm6 libxext6 libxrender-dev
+
+
+RUN	apt-get -y install p7zip-full
+RUN	apt-get -y install tesseract-ocr
+RUN	apt-get -y install libtesseract-dev
 
 # updating pip and installing git
 RUN pip install --upgrade pip
