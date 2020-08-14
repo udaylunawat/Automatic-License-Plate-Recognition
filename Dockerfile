@@ -26,9 +26,9 @@ RUN pip install --upgrade pip
 RUN apt -y install git
 
 # Generating data ETL, downloading inference and installing retinanet from source
-RUN make data
-RUN make inference_download
-RUN make retinanet_source
+RUN make -s data
+RUN make -s inference_download
+RUN make -s retinanet_source
 
 EXPOSE 8080
 
