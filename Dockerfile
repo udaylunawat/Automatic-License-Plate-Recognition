@@ -12,7 +12,7 @@ ADD . /app
 # Packages for make
 RUN apt-get update && \
     apt-get -y install build-essential \
-    libsm6 libxext6 libxrender-dev
+    libsm6 libxext6 libxrender-dev libgl1-mesa-glx
 
 
 RUN	apt-get -y install p7zip-full
@@ -30,4 +30,4 @@ RUN make retinanet_source
 
 EXPOSE 8080
 
-CMD streamlit run --server.port 8080 --server.enableCORS false app.py 
+CMD streamlit run --server.port 8888 --server.enableCORS false app.py 
