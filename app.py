@@ -180,6 +180,7 @@ def cropped_image(image, b):
 
 #============================ About ==========================
 def about():
+    st.header("Deployed this Streamlit app with Docker on GCP (Google Cloud Platform) ")
     st.write("""
     ## \u26C5 Behind The Scene
         """)

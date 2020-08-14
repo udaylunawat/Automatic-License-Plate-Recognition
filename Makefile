@@ -10,7 +10,7 @@ PROFILE = default
 PYTHON_INTERPRETER = python3
 JSON_DOWNLOAD_URL = https://www.dropbox.com/s/8netfite5znq6o4/Indian_Number_plates.json
 IMAGES_ZIP = https://www.dropbox.com/s/k3mhm1kz192bwue/Indian_Number_Plates.7z
-INFERENCE = https://storage.googleapis.com/dracarys3_bucket/license%20plate/ALPR/retinanet_inference/plate_inference_tf2_2.h5
+INFERENCE = https://storage.googleapis.com/dracarys3_bucket/ALPR/license_plate/ALPR/retinanet_inference/plate_inference_tf2_2.h5
 ifeq (,$(shell which conda))
 HAS_CONDA=False
 else
@@ -61,6 +61,13 @@ train: data
 
 inference_download:
 	wget -c $(INFERENCE) -O output/models/inference/plate_inference_tf2.h5 -q --show-progress
+
+retinanet_source:
+	git clone https://github.com/udaylunawat/keras-retinanet.git
+	$(PYTHON_INTERPRETER) -m pip install keras-retinanet/.
+	cd keras-retinanet
+	$(PYTHON_INTERPRETER) -m python setup.py build_ext --inplace
+	cd ..
 
 ## Delete all compiled Python files
 clean:
