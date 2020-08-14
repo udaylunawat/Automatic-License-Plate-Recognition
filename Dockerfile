@@ -10,7 +10,8 @@ ADD . /app
 
 # Packages for make
 RUN apt-get update && \
-    apt-get -y install build-essential
+    apt-get -y install build-essential \
+    libsm6 libxext6 libxrender-dev
 
 # updating pip and installing git
 RUN pip install --upgrade pip
@@ -23,5 +24,4 @@ RUN make retinanet_source
 
 EXPOSE 8080
 
-# removed --server.enableCORS false
-CMD streamlit run --server.port 8080 app.py  
+CMD streamlit run --server.port 8080 --server.enableCORS false app.py 
