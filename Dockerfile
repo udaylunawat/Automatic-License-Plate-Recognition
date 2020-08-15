@@ -1,10 +1,9 @@
-FROM conda/miniconda3
-RUN apt-get update  -y
-RUN apt-get upgrade -y
-RUN apt-get -y install wget
+FROM continuumio/miniconda3
+# LABEL maintainer="Uday Lunawat @dracarys3"
+RUN apt-get update  -y && apt-get upgrade -y
+
 # Packages for make
-RUN apt-get update && \
-    apt-get -y install build-essential \
+RUN apt-get -y install --upgrade pip wget git build-essential \
     libsm6 libxext6 libxrender-dev libgl1-mesa-glx \
     software-properties-common
 RUN add-apt-repository ppa:alex-p/tesseract-ocr
@@ -14,16 +13,8 @@ WORKDIR /app
 ADD requirements.txt /app/requirements.txt
 ADD . /app
 
-
-
-
-RUN	apt-get -y install p7zip-full
-RUN	apt-get -y install tesseract-ocr
-RUN	apt-get -y install libtesseract-dev
-
-# updating pip and installing git
-RUN pip install --upgrade pip
-RUN apt -y install git
+# 7zip and tesseract
+RUN	apt-get -y install p7zip-full tesseract-ocr libtesseract-dev
 
 # Generating data ETL, downloading inference and installing retinanet from source
 RUN make -s data
