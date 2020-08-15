@@ -1,0 +1,15 @@
+
+# ignore .git and .cache folders
+.git
+.cache
+
+# exclude data from source control by default
+/data/0_raw/*
+/data/1_external/*
+/data/2_interim/*
+/data/3_processed/*
+/output/models/inference/
+/output/models/snapshots/
+/output/models/TrainingOutput/
+/keras-retinanet
+/archive

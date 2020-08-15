@@ -1,9 +1,9 @@
 """This is an Object detection and Optical Character Recognition(OCR) app that enables a user to
 
-- Select or upload an image (in the side bar)
-- Get a annotated and cropped license plate image (in the main area)
-- Play around with Image enhance options (OpenCV)
-- Get OCR Prediction using various options
+- Select or upload an image (in the side bar ⬅️).
+- Get a annotated and cropped license plate image (in the main area ⬇️)
+- Play around with Image enhance options (OpenCV).
+- Get OCR Prediction using various options.
 
 """
 
@@ -18,6 +18,7 @@ import time
 import pytesseract
 from PIL import Image,ImageEnhance
 import random
+
 # Machine Learning frameworks
 # from keras import backend as K
 from keras_retinanet import models
@@ -201,18 +202,24 @@ def about():
     st.markdown("Built with Streamlit by [Uday Lunawat](https://github.com/udaylunawat)")
 
 #======================== Time To See The Magic ===========================
-st.beta_set_page_config(page_title="Ex-stream-ly Cool App", page_icon="🧊",layout="wide",initial_sidebar_state="expanded")
+st.beta_set_page_config(page_title="Ex-stream-ly Cool App", page_icon="🧊",layout="centered",initial_sidebar_state="expanded")
 crop, image = None, None
 img_size, crop_size = 600, 400
 
 st.set_option('deprecation.showfileUploaderEncoding', False)
-st.markdown("<h1 style='text-align: center; color: black;'>Indian ALPR System using Deep Learning</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: black;'>Indian ALPR System using Deep Learning 👁</h1>", unsafe_allow_html=True)
 st.info(__doc__)
-# st.markdown("<h1 style='text-align: center; color: black;'>Automatic License Plate Recognition</h1>", unsafe_allow_html=True)
-# st.markdown("<h2 style='text-align: center; color: black;'>Made with Google's Tensorflow</h2>", unsafe_allow_html=True)
-st.write("""""")
+st.write("## How does it work?")
+st.write("Add an image of a car and a [deep learning](http://wiki.fast.ai/index.php/Lesson_1_Notes) model will look at it and find the **license plate** like the example below:")
+st.image(Image.open("sample_output.png"),
+        caption="Example of a model being run on a car.",
+        use_column_width=True)
 
-st.markdown("👆 Please Open sidebar to upload images")
+st.write("""""")
+st.write("## Upload your own image")
+st.markdown("👈 Please open sidebar to choose an existing image or upload your own image.")
+
+
 activities = ["Detection and OCR", "About"]
 choice = st.sidebar.selectbox("Select Task", activities)
 
@@ -250,14 +257,14 @@ if activity:
             st.sidebar.success("Upload Image!")
         imageselect = None
 
+st.text("""""")
+
 if choice == "Detection and OCR" and image:
     
-    st.sidebar.text("""
-        Preview 👀 Of Selected Image!
-        """)
+    st.write("## Preview 👀 Of Selected Image!")
 
     if image is not None:
-        st.sidebar.image(
+        st.image(
             image,
             use_column_width=True,
             caption = 'Original Image'
@@ -271,103 +278,109 @@ if choice == "Detection and OCR" and image:
     
     st.text("""""")
 
-    # if st.button("Process"):
-    model = load_detector_model()
     
-    if image:
-        try:
-            with st.spinner('Wait for it...'):
-                annotated_image, score, draw, b = detector(IMAGE_PATH)
-                time.sleep(3)
-            st.subheader("License Plate Detection!")
-            st.image(
-                annotated_image, 
-                caption = 'Annotated Image with confidence score: {0:.2f}'.format(score),
-                width = img_size)
-            crop = cropped_image(draw, b)
-        except TypeError:
-            st.error('''
-            Model is not confident enough!
-            \nTry lowering the confidence cutoff score from sidebar OR Use any other image.
-            ''')
+    st.write("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
+    st.text("""""")
+    if st.button("Make a Prediction 🔥"):
+        model = load_detector_model()
+        
+        if image:
+            try:
+                with st.spinner('Wait for it...'):
+                    annotated_image, score, draw, b = detector(IMAGE_PATH)
+                    time.sleep(3)
+                st.subheader("License Plate Detection!")
+                st.image(
+                    annotated_image, 
+                    caption = 'Annotated Image with confidence score: {0:.2f}'.format(score),
+                    use_column_width=True)
+                crop = cropped_image(draw, b)
+            except TypeError:
+                st.error('''
+                Model is not confident enough!
+                \nTry lowering the confidence cutoff score from sidebar OR Use any other image.
+                ''')
 
 
-        if crop is not None:
-            st.subheader("Cropped License Plate")
+            if crop is not None:
+                st.subheader("Cropped License Plate")
 
-            enhance_type = st.sidebar.radio("Enhance Type",["Original","Gray-Scale","Contrast","Brightness","Blurring","Cannize"])
+                enhance_type = st.sidebar.radio("Enhance Type",["Original","Gray-Scale","Contrast","Brightness","Blurring","Cannize"])
 
 
-            if enhance_type == 'Original':
-                output_image = crop
-                st.image(output_image,width = crop_size, caption = enhance_type)
+                if enhance_type == 'Original':
+                    output_image = crop
+                    st.image(output_image, width=crop_size, caption = enhance_type)
 
-            elif enhance_type == 'Gray-Scale':
-                temp = np.array(crop.convert('RGB'))
-                # temp = cv2.cvtColor(temp,1)
-                output_image = cv2.cvtColor(temp,cv2.COLOR_BGR2GRAY)
-                st.image(output_image, width = crop_size, caption = enhance_type)
+                elif enhance_type == 'Gray-Scale':
+                    temp = np.array(crop.convert('RGB'))
+                    output_image = cv2.cvtColor(temp,cv2.COLOR_BGR2GRAY)
+                    st.image(output_image, width = crop_size, caption = enhance_type)
 
-            elif enhance_type == 'Contrast':
-                c_rate = st.sidebar.slider("Contrast",0.2,8.0,(3.5))
-                enhancer = ImageEnhance.Contrast(crop)
-                output_image = enhancer.enhance(c_rate)
-                st.image(output_image,width = crop_size, caption = enhance_type)
+                elif enhance_type == 'Contrast':
+                    c_rate = st.sidebar.slider("Contrast",0.2,8.0,(3.5))
+                    enhancer = ImageEnhance.Contrast(crop)
+                    output_image = enhancer.enhance(c_rate)
+                    st.image(output_image,width = crop_size, caption = enhance_type)
 
-            elif enhance_type == 'Brightness':
-                c_rate = st.sidebar.slider("Brightness",0.2,8.0,(1.5))
-                enhancer = ImageEnhance.Brightness(crop)
-                output_image = enhancer.enhance(c_rate)
-                st.image(output_image, width = crop_size, caption = enhance_type)
+                elif enhance_type == 'Brightness':
+                    c_rate = st.sidebar.slider("Brightness",0.2,8.0,(1.5))
+                    enhancer = ImageEnhance.Brightness(crop)
+                    output_image = enhancer.enhance(c_rate)
+                    st.image(output_image, width = crop_size, caption = enhance_type)
 
-            elif enhance_type == 'Blurring':
-                temp = np.array(crop.convert('RGB'))
-                blur_rate = st.sidebar.slider("Blur",0.2,8.0,(1.5))
-                img = cv2.cvtColor(temp,1)
-                output_image = cv2.GaussianBlur(img,(11,11),blur_rate)
-                st.image(output_image, width = crop_size, caption = enhance_type)
-            
-            elif enhance_type == 'Cannize':
-                # cannize = st.sidebar.slider("Cannize",0.2,8.0,(1.5))
-                output_image = cannize_image(crop)
-                st.image(output_image, width = crop_size, caption = enhance_type)
+                elif enhance_type == 'Blurring':
+                    temp = np.array(crop.convert('RGB'))
+                    blur_rate = st.sidebar.slider("Blur",0.2,8.0,(1.5))
+                    img = cv2.cvtColor(temp,1)
+                    output_image = cv2.GaussianBlur(img,(11,11),blur_rate)
+                    st.image(output_image, width = crop_size, caption = enhance_type)
+                
+                elif enhance_type == 'Cannize':
+                    output_image = cannize_image(crop)
+                    st.image(output_image, width = crop_size, caption = enhance_type)
 
-            st.text("""""")
-            st.subheader("Optical Character Recognition (OCR)")
-            st.warning("Note: Here, OCR is performed on the enhanced cropped images.")
-            st.text("""""")
-            OCR_type = st.sidebar.radio("OCR Mode",["Google's Tesseract OCR","easy_OCR","Secret Combo All-out Attack!!"])
-            if st.button('Recognize Characters !!'):
                 st.text("""""")
-
-                if OCR_type == "Google's Tesseract OCR":
-                    try:
-                        tessy_ocr = OCR(output_image)
-                        if tessy_ocr!='' and tessy_ocr is not None:
-                            st.success("Google's Tesseract OCR: " + tessy_ocr)
-                        else:
-                            st.error("Google's Tesseract OCR Failed! :sob:")
-                    except:
-                        pass
-
-                elif OCR_type == "easy_OCR":	
-                    try:
-                        easy_ocr = e_OCR(output_image)
-                        st.success("easy OCR: " + easy_ocr)
-                        st.balloons()
-                    except:
-                        st.write("Easy OCR Failed or not installed! :sob:")
-
-                elif OCR_type == "Secret Combo All-out Attack!!":
+                st.subheader("Optical Character Recognition (OCR)")
+                st.warning("Note: Here, OCR is performed on the enhanced cropped images.")
+                st.text("""""")
+                OCR_type = st.sidebar.radio("OCR Mode",["Google's Tesseract OCR","easy_OCR","Secret Combo All-out Attack!!"])
+                if st.button('Recognize Characters !!'):
                     st.text("""""")
-                    try_all_OCR(output_image)
-                # if text_ocr != '':
-                # 	st.success(text_ocr)
-            
-        
-        
-        st.text("""""")
-        st.subheader("Go to the About section from the sidebar to learn more about this project!")
 
+                    if OCR_type == "Google's Tesseract OCR":
+                        try:
+                            tessy_ocr = OCR(output_image)
+                            if tessy_ocr!='' and tessy_ocr is not None:
+                                st.success("Google's Tesseract OCR: " + tessy_ocr)
+                            else:
+                                st.error("Google's Tesseract OCR Failed! :sob:")
+                        except:
+                            pass
+
+                    elif OCR_type == "easy_OCR":	
+                        try:
+                            easy_ocr = e_OCR(output_image)
+                            st.success("easy OCR: " + easy_ocr)
+                            st.balloons()
+                        except:
+                            st.write("Easy OCR Failed or not installed! :sob:")
+
+                    elif OCR_type == "Secret Combo All-out Attack!!":
+                        st.text("""""")
+                        try_all_OCR(output_image)
+                
 elif choice == "About":
     about()
+
+st.text("""""")
+st.write("## How is this made?")
+st.write("The machine learning happens with a fine-tuned [Retinanet](https://arxiv.org/abs/1708.02002) or [YoloV3](https://pjreddie.com/darknet/yolo/) model ([Google's Tensorflow 2](https://www.tensorflow.org/)), \
+this front end (what you're reading) is built with [Streamlit](https://www.streamlit.io/) \
+and it's all hosted on [Google's App Engine](https://cloud.google.com/appengine/).")
+st.write("See the [code on GitHub](https://github.com/udaylunawat/Automatic-License-Plate-Recognition)")
+# st.video("https://youtu.be/C_lIenSJb3c")
+#  and a [YouTube playlist](https://www.youtube.com/playlist?list=PL6vjgQ2-qJFeMrZ0sBjmnUBZNX9xaqKuM) detailing more below.")
+
+st.text("""""")
+st.write("Go to the About section from the sidebar to learn more about this project!")
