@@ -79,7 +79,7 @@ def cannize_image(our_image):
     canny = cv2.Canny(img, 100, 150)
     return canny
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=True)
+@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=False)
 def load_detector_model():
 
     model_path = 'output/models/inference/plate_inference_tf2.h5'
@@ -110,7 +110,7 @@ def load_image(image_path):
     image = image[:, :, ::-1].copy()
     return image
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=True)
+@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=False)
 def inference(model, image, scale): # session
     # Run the inference
     start = time.time()
@@ -279,96 +279,96 @@ if choice == "Detection and OCR" and image:
     st.text("""""")
 
     
-    st.write("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
+    st.warning("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
     st.text("""""")
-    if st.button("Make a Prediction 🔥"):
-        model = load_detector_model()
+    # if st.button("Make a Prediction 🔥"):
+    model = load_detector_model()
+    
+    if image:
+        try:
+            with st.spinner('Doing the Math...'):
+                annotated_image, score, draw, b = detector(IMAGE_PATH)
+                time.sleep(3)
+            st.subheader("License Plate Detection!")
+            st.image(
+                annotated_image, 
+                caption = 'Annotated Image with confidence score: {0:.2f}'.format(score),
+                use_column_width=True)
+            crop = cropped_image(draw, b)
+        except TypeError:
+            st.error('''
+            Model is not confident enough!
+            \nTry lowering the confidence cutoff score from sidebar OR Use any other image.
+            ''')
+
+
+    if crop is not None:
+        st.subheader("Cropped License Plate")
+
+        enhance_type = st.sidebar.radio("Enhance Type",["Original","Gray-Scale","Contrast","Brightness","Blurring","Cannize"])
+
+
+        if enhance_type == 'Original':
+            output_image = crop
+            st.image(output_image, width=crop_size, caption = enhance_type)
+
+        elif enhance_type == 'Gray-Scale':
+            temp = np.array(crop.convert('RGB'))
+            output_image = cv2.cvtColor(temp,cv2.COLOR_BGR2GRAY)
+            st.image(output_image, width = crop_size, caption = enhance_type)
+
+        elif enhance_type == 'Contrast':
+            c_rate = st.sidebar.slider("Contrast",0.2,8.0,(3.5))
+            enhancer = ImageEnhance.Contrast(crop)
+            output_image = enhancer.enhance(c_rate)
+            st.image(output_image,width = crop_size, caption = enhance_type)
+
+        elif enhance_type == 'Brightness':
+            c_rate = st.sidebar.slider("Brightness",0.2,8.0,(1.5))
+            enhancer = ImageEnhance.Brightness(crop)
+            output_image = enhancer.enhance(c_rate)
+            st.image(output_image, width = crop_size, caption = enhance_type)
+
+        elif enhance_type == 'Blurring':
+            temp = np.array(crop.convert('RGB'))
+            blur_rate = st.sidebar.slider("Blur",0.2,8.0,(1.5))
+            img = cv2.cvtColor(temp,1)
+            output_image = cv2.GaussianBlur(img,(11,11),blur_rate)
+            st.image(output_image, width = crop_size, caption = enhance_type)
         
-        if image:
-            try:
-                with st.spinner('Wait for it...'):
-                    annotated_image, score, draw, b = detector(IMAGE_PATH)
-                    time.sleep(3)
-                st.subheader("License Plate Detection!")
-                st.image(
-                    annotated_image, 
-                    caption = 'Annotated Image with confidence score: {0:.2f}'.format(score),
-                    use_column_width=True)
-                crop = cropped_image(draw, b)
-            except TypeError:
-                st.error('''
-                Model is not confident enough!
-                \nTry lowering the confidence cutoff score from sidebar OR Use any other image.
-                ''')
+        elif enhance_type == 'Cannize':
+            output_image = cannize_image(crop)
+            st.image(output_image, width = crop_size, caption = enhance_type)
 
+        st.text("""""")
+        st.write("## 🎅 Bonus:- Optical Character Recognition (OCR)")
+        st.warning("Note: Here, OCR is performed on the enhanced cropped images.")
+        st.text("""""")
+        OCR_type = st.sidebar.radio("OCR Mode",["Google's Tesseract OCR","easy_OCR","Secret Combo All-out Attack!!"])
+        if st.button('Recognize Characters !!'):
+            st.text("""""")
 
-            if crop is not None:
-                st.subheader("Cropped License Plate")
+            if OCR_type == "Google's Tesseract OCR":
+                try:
+                    tessy_ocr = OCR(output_image)
+                    if tessy_ocr!='' and tessy_ocr is not None:
+                        st.success("Google's Tesseract OCR: " + tessy_ocr)
+                    else:
+                        st.error("Google's Tesseract OCR Failed! :sob:")
+                except:
+                    pass
 
-                enhance_type = st.sidebar.radio("Enhance Type",["Original","Gray-Scale","Contrast","Brightness","Blurring","Cannize"])
+            elif OCR_type == "easy_OCR":	
+                try:
+                    easy_ocr = e_OCR(output_image)
+                    st.success("easy OCR: " + easy_ocr)
+                    st.balloons()
+                except:
+                    st.write("Easy OCR Failed or not installed! :sob:")
 
-
-                if enhance_type == 'Original':
-                    output_image = crop
-                    st.image(output_image, width=crop_size, caption = enhance_type)
-
-                elif enhance_type == 'Gray-Scale':
-                    temp = np.array(crop.convert('RGB'))
-                    output_image = cv2.cvtColor(temp,cv2.COLOR_BGR2GRAY)
-                    st.image(output_image, width = crop_size, caption = enhance_type)
-
-                elif enhance_type == 'Contrast':
-                    c_rate = st.sidebar.slider("Contrast",0.2,8.0,(3.5))
-                    enhancer = ImageEnhance.Contrast(crop)
-                    output_image = enhancer.enhance(c_rate)
-                    st.image(output_image,width = crop_size, caption = enhance_type)
-
-                elif enhance_type == 'Brightness':
-                    c_rate = st.sidebar.slider("Brightness",0.2,8.0,(1.5))
-                    enhancer = ImageEnhance.Brightness(crop)
-                    output_image = enhancer.enhance(c_rate)
-                    st.image(output_image, width = crop_size, caption = enhance_type)
-
-                elif enhance_type == 'Blurring':
-                    temp = np.array(crop.convert('RGB'))
-                    blur_rate = st.sidebar.slider("Blur",0.2,8.0,(1.5))
-                    img = cv2.cvtColor(temp,1)
-                    output_image = cv2.GaussianBlur(img,(11,11),blur_rate)
-                    st.image(output_image, width = crop_size, caption = enhance_type)
-                
-                elif enhance_type == 'Cannize':
-                    output_image = cannize_image(crop)
-                    st.image(output_image, width = crop_size, caption = enhance_type)
-
+            elif OCR_type == "Secret Combo All-out Attack!!":
                 st.text("""""")
-                st.subheader("Optical Character Recognition (OCR)")
-                st.warning("Note: Here, OCR is performed on the enhanced cropped images.")
-                st.text("""""")
-                OCR_type = st.sidebar.radio("OCR Mode",["Google's Tesseract OCR","easy_OCR","Secret Combo All-out Attack!!"])
-                if st.button('Recognize Characters !!'):
-                    st.text("""""")
-
-                    if OCR_type == "Google's Tesseract OCR":
-                        try:
-                            tessy_ocr = OCR(output_image)
-                            if tessy_ocr!='' and tessy_ocr is not None:
-                                st.success("Google's Tesseract OCR: " + tessy_ocr)
-                            else:
-                                st.error("Google's Tesseract OCR Failed! :sob:")
-                        except:
-                            pass
-
-                    elif OCR_type == "easy_OCR":	
-                        try:
-                            easy_ocr = e_OCR(output_image)
-                            st.success("easy OCR: " + easy_ocr)
-                            st.balloons()
-                        except:
-                            st.write("Easy OCR Failed or not installed! :sob:")
-
-                    elif OCR_type == "Secret Combo All-out Attack!!":
-                        st.text("""""")
-                        try_all_OCR(output_image)
+                try_all_OCR(output_image)
                 
 elif choice == "About":
     about()
