@@ -121,7 +121,7 @@ sphinxcontrib-htmlhelp==1.0.3
 sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.4
-streamlit==0.65.1
+streamlit-nightly==0.65.3
 tensorflow==2.2
 terminado==0.8.3
 testpath==0.4.4

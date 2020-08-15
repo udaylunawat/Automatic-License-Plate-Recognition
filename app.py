@@ -8,6 +8,7 @@
 """
 
 import streamlit as st
+
 import cv2
 import numpy as np
 import os
@@ -200,7 +201,7 @@ def about():
     st.markdown("Built with Streamlit by [Uday Lunawat](https://github.com/udaylunawat)")
 
 #======================== Time To See The Magic ===========================
-
+st.beta_set_page_config(page_title="Ex-stream-ly Cool App", page_icon="🧊",layout="wide",initial_sidebar_state="expanded")
 crop, image = None, None
 img_size, crop_size = 600, 400
 
@@ -217,27 +218,37 @@ choice = st.sidebar.selectbox("Select Task", activities)
 
 
 samplefiles = sorted([sample for sample in listdir('data/sample_images')])
-radio = st.sidebar.radio("Choose existing sample or try your own:",('Choose existing', 'Upload'))
-if radio == 'Choose existing':
-    imageselect = st.sidebar.selectbox("Pick from existing samples", (samplefiles))
-    image = Image.open('data/sample_images/'+imageselect)
-    IMAGE_PATH = 'data/sample_images/'+imageselect
-    image = Image.open('data/sample_images/'+imageselect)
-    img_file_buffer = None
+radio_list = ['Choose existing', 'Upload']
 
-else:
-    # You can specify more file types below if you want
-    img_file_buffer = st.sidebar.file_uploader("Upload image", type=['jpeg', 'png', 'jpg', 'webp'], multiple_files = True)
-    st.text("""""")
-    IMAGE_PATH = img_file_buffer
-    try:
-        image = Image.open(img_file_buffer)
-    except:
-        pass
+query_params = st.experimental_get_query_params()
+# Query parameters are returned as a list to support multiselect.
+# Get the second item (upload) in the list if the query parameter exists.
+# Setting default page as Upload page, checkout the url too. The page state can be shared now!
+default = int(query_params['activity'][0]) if 'activity' in query_params else 1
 
-    if image == None:
-        st.sidebar.success("Upload Image!")
-    imageselect = None
+activity = st.sidebar.radio("Choose existing sample or try your own:",radio_list,index=default)
+if activity:
+    st.experimental_set_query_params(activity=radio_list.index(activity))
+    if activity == 'Choose existing':
+        imageselect = st.sidebar.selectbox("Pick from existing samples", (samplefiles))
+        image = Image.open('data/sample_images/'+imageselect)
+        IMAGE_PATH = 'data/sample_images/'+imageselect
+        image = Image.open('data/sample_images/'+imageselect)
+        img_file_buffer = None
+
+    else:
+        # You can specify more file types below if you want
+        img_file_buffer = st.sidebar.file_uploader("Upload image", type=['jpeg', 'png', 'jpg', 'webp'], multiple_files = True)
+        st.text("""""")
+        IMAGE_PATH = img_file_buffer
+        try:
+            image = Image.open(img_file_buffer)
+        except:
+            pass
+
+        if image == None:
+            st.sidebar.success("Upload Image!")
+        imageselect = None
 
 if choice == "Detection and OCR" and image:
     
