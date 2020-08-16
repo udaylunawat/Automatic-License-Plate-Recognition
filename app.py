@@ -8,12 +8,15 @@
 """
 
 import streamlit as st
-import config
-import cv2
-import numpy as np
+st.beta_set_page_config(page_title="Ex-stream-ly Cool App", page_icon="😎",layout="centered",initial_sidebar_state="expanded")
 import os
 from os import listdir
 from os.path import isfile, join
+
+import config
+import cv2
+import numpy as np
+
 import time
 import pytesseract
 from PIL import Image,ImageEnhance
@@ -29,8 +32,8 @@ from pyngrok import ngrok
 import webbrowser
 
 # https://github.com/keras-team/keras/issues/13353#issuecomment-545459472
-import keras.backend.tensorflow_backend as tb
-tb._SYMBOLIC_SCOPE.value = True
+# import keras.backend.tensorflow_backend as tb
+# tb._SYMBOLIC_SCOPE.value = True
 
 # load label to names mapping for visualization purposes
 labels_to_names = {0: 'number_plate'}
@@ -76,6 +79,37 @@ def OCR(crop_image):
     except:
         pass
     return text_output
+
+def streamlit_OCR(crop):
+    st.text("""""")
+    st.write("## 🎅 Bonus:- Optical Character Recognition (OCR)")
+    st.warning("Note: Here, OCR is performed on the enhanced cropped images.")
+    st.text("""""")
+    OCR_type = st.sidebar.radio("OCR Mode",["Google's Tesseract OCR","easy_OCR","Secret Combo All-out Attack!!"])
+    if st.button('Recognize Characters !!'):
+        st.text("""""")
+
+        if OCR_type == "Google's Tesseract OCR":
+            try:
+                tessy_ocr = OCR(output_image)
+                if tessy_ocr!='' and tessy_ocr is not None:
+                    st.success("Google's Tesseract OCR: " + tessy_ocr)
+                else:
+                    st.error("Google's Tesseract OCR Failed! :sob:")
+            except:
+                pass
+
+        elif OCR_type == "easy_OCR":	
+            try:
+                easy_ocr = e_OCR(output_image)
+                st.success("easy OCR: " + easy_ocr)
+                st.balloons()
+            except:
+                st.write("Easy OCR Failed or not installed! :sob:")
+
+        elif OCR_type == "Secret Combo All-out Attack!!":
+            st.text("""""")
+            try_all_OCR(output_image)
 
 def cannize_image(our_image):
     new_img = np.array(our_image.convert('RGB'))
@@ -177,6 +211,47 @@ def detector(image_path):
 
     return drawn, max(scores[0]), draw, b
 
+
+def enhance_crop(crop):
+
+    if crop is not None:
+        st.subheader("Cropped License Plate")
+
+        enhance_type = st.sidebar.radio("Enhance Type",["Original","Gray-Scale","Contrast","Brightness","Blurring","Cannize"])
+
+
+        if enhance_type == 'Original':
+            output_image = crop
+            st.image(output_image, width=crop_size, caption = enhance_type)
+
+        elif enhance_type == 'Gray-Scale':
+            temp = np.array(crop.convert('RGB'))
+            output_image = cv2.cvtColor(temp,cv2.COLOR_BGR2GRAY)
+            st.image(output_image, width = crop_size, caption = enhance_type)
+
+        elif enhance_type == 'Contrast':
+            c_rate = st.sidebar.slider("Contrast",0.2,8.0,(3.5))
+            enhancer = ImageEnhance.Contrast(crop)
+            output_image = enhancer.enhance(c_rate)
+            st.image(output_image,width = crop_size, caption = enhance_type)
+
+        elif enhance_type == 'Brightness':
+            c_rate = st.sidebar.slider("Brightness",0.2,8.0,(1.5))
+            enhancer = ImageEnhance.Brightness(crop)
+            output_image = enhancer.enhance(c_rate)
+            st.image(output_image, width = crop_size, caption = enhance_type)
+
+        elif enhance_type == 'Blurring':
+            temp = np.array(crop.convert('RGB'))
+            blur_rate = st.sidebar.slider("Blur",0.2,8.0,(1.5))
+            img = cv2.cvtColor(temp,1)
+            output_image = cv2.GaussianBlur(img,(11,11),blur_rate)
+            st.image(output_image, width = crop_size, caption = enhance_type)
+        
+        elif enhance_type == 'Cannize':
+            output_image = cannize_image(crop)
+            st.image(output_image, width = crop_size, caption = enhance_type)
+            
 @st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=False)
 def cropped_image(image, b):
     crop = cv2.rectangle(np.array(draw), (int(b[0]), int(b[1])), (int(b[2]), int(b[3])), (0, 0, 255), 1)
@@ -239,6 +314,7 @@ def yolo_detect(frame, net, ln, Idx=0):
                 boxes.append([x, y, int(width), int(height)])
                 centroids.append((centerX, centerY))
                 confidences.append(float(confidence))
+
     print("Processing time for YOLOV3: --- %s seconds ---" % (time.time() - start))
     # apply non-maxima suppression to suppress weak, overlapping
     # bounding boxes
@@ -261,15 +337,14 @@ def yolo_detect(frame, net, ln, Idx=0):
     # return the list of results
     return results
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=False)
+
 def streamlit_preview_image(image):
-    placeholder = st.empty()
+    placeholder = st.sidebar.empty()
     placeholder.image(
     image,
     use_column_width=True,
     caption = "Original Image")
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=False)
 def streamlit_output_image(image, caption):
     placeholder = st.empty()
     placeholder.image(
@@ -299,8 +374,8 @@ def about():
     st.markdown("Built with Streamlit by [Uday Lunawat](https://github.com/udaylunawat)")
 
 #======================== Time To See The Magic ===========================
-st.beta_set_page_config(page_title="Ex-stream-ly Cool App", page_icon="🧊",layout="centered",initial_sidebar_state="expanded")
-model = load_detector_model()
+
+
 crop, image = None, None
 img_size, crop_size = 600, 400
 
@@ -309,7 +384,7 @@ st.markdown("<h1 style='text-align: center; color: black;'>Indian ALPR System us
 st.info(__doc__)
 st.write("## How does it work?")
 st.write("Add an image of a car and a [deep learning](http://wiki.fast.ai/index.php/Lesson_1_Notes) model will look at it and find the **license plate** like the example below:")
-st.image(Image.open("sample_output.png"),
+st.image(Image.open("output/sample_output.png"),
         caption="Example of a model being run on a car.",
         use_column_width=True)
 
@@ -357,12 +432,25 @@ if activity:
 
 st.text("""""")
 
+model = load_detector_model()
+if choice == "RetinaNet Detection and OCR":
 
-if choice == "RetinaNet Detection and OCR" and image:
-    
-    st.write("## Preview 👀 Of Selected Image!")
+    if image is None:
+        od_dir = 'banners/Object detection/'
+        od_banner = random.choice(listdir(od_dir))
+        st.sidebar.markdown("\n")
+        st.sidebar.image(od_dir+od_banner, use_column_width=True)
+
+        st.sidebar.markdown(
+            "[RetinaNet](https://arxiv.org/abs/1708.02002) is **one of the best one-stage object detection models** that has proven to work well with dense and small scale objects. \
+            For this reason, it has become a **popular** object detection model to be used with aerial and satellite imagery. \
+            \n\n[RetinaNet architecture](https://www.mantralabsglobal.com/blog/better-dense-shape-detection-in-live-imagery-with-retinanet/) was published by **Facebook AI Research (FAIR)** and uses Feature Pyramid Network (FPN) with ResNet. \
+            This architecture demonstrates **higher accuracy** in situations where *speed is not really important*. \
+            RetinaNet is built on top of FPN using ResNet.")
 
     if image is not None:
+
+        st.sidebar.markdown("## Preview 👀 Of Selected Image!")
         streamlit_preview_image(image)
 
         metric = st.sidebar.radio("metric ",["Confidence cutoff"])
@@ -392,78 +480,37 @@ if choice == "RetinaNet Detection and OCR" and image:
             ''')
 
 
-    if crop is not None:
-        st.subheader("Cropped License Plate")
-
-        enhance_type = st.sidebar.radio("Enhance Type",["Original","Gray-Scale","Contrast","Brightness","Blurring","Cannize"])
+        enhance_crop(crop)
+        streamlit_OCR(crop)
 
 
-        if enhance_type == 'Original':
-            output_image = crop
-            st.image(output_image, width=crop_size, caption = enhance_type)
+if choice == "YoloV3 Detection and OCR":
 
-        elif enhance_type == 'Gray-Scale':
-            temp = np.array(crop.convert('RGB'))
-            output_image = cv2.cvtColor(temp,cv2.COLOR_BGR2GRAY)
-            st.image(output_image, width = crop_size, caption = enhance_type)
-
-        elif enhance_type == 'Contrast':
-            c_rate = st.sidebar.slider("Contrast",0.2,8.0,(3.5))
-            enhancer = ImageEnhance.Contrast(crop)
-            output_image = enhancer.enhance(c_rate)
-            st.image(output_image,width = crop_size, caption = enhance_type)
-
-        elif enhance_type == 'Brightness':
-            c_rate = st.sidebar.slider("Brightness",0.2,8.0,(1.5))
-            enhancer = ImageEnhance.Brightness(crop)
-            output_image = enhancer.enhance(c_rate)
-            st.image(output_image, width = crop_size, caption = enhance_type)
-
-        elif enhance_type == 'Blurring':
-            temp = np.array(crop.convert('RGB'))
-            blur_rate = st.sidebar.slider("Blur",0.2,8.0,(1.5))
-            img = cv2.cvtColor(temp,1)
-            output_image = cv2.GaussianBlur(img,(11,11),blur_rate)
-            st.image(output_image, width = crop_size, caption = enhance_type)
+    if image is None:
+        yolo_dir = 'banners/yolo/'
+        yolo_banner = random.choice(listdir(yolo_dir))
+        st.sidebar.markdown("\n")
+        st.sidebar.markdown(yolo_banner)
+        st.sidebar.image(yolo_dir+yolo_banner, use_column_width=True)
         
-        elif enhance_type == 'Cannize':
-            output_image = cannize_image(crop)
-            st.image(output_image, width = crop_size, caption = enhance_type)
-
-        st.text("""""")
-        st.write("## 🎅 Bonus:- Optical Character Recognition (OCR)")
-        st.warning("Note: Here, OCR is performed on the enhanced cropped images.")
-        st.text("""""")
-        OCR_type = st.sidebar.radio("OCR Mode",["Google's Tesseract OCR","easy_OCR","Secret Combo All-out Attack!!"])
-        if st.button('Recognize Characters !!'):
-            st.text("""""")
-
-            if OCR_type == "Google's Tesseract OCR":
-                try:
-                    tessy_ocr = OCR(output_image)
-                    if tessy_ocr!='' and tessy_ocr is not None:
-                        st.success("Google's Tesseract OCR: " + tessy_ocr)
-                    else:
-                        st.error("Google's Tesseract OCR Failed! :sob:")
-                except:
-                    pass
-
-            elif OCR_type == "easy_OCR":	
-                try:
-                    easy_ocr = e_OCR(output_image)
-                    st.success("easy OCR: " + easy_ocr)
-                    st.balloons()
-                except:
-                    st.write("Easy OCR Failed or not installed! :sob:")
-
-            elif OCR_type == "Secret Combo All-out Attack!!":
-                st.text("""""")
-                try_all_OCR(output_image)
-
-if choice == "YoloV3 Detection and OCR" and image:
-    st.write("## Preview 👀 Of Selected Image!")
-
+        st.sidebar.markdown(
+            "**YOLO (“You Only Look Once”)** is an effective real-time object recognition algorithm, \
+            first described in the seminal 2015 [**paper**](https://arxiv.org/abs/1506.02640) by Joseph Redmon et al.\
+            It's a network that uses **Deep Learning (DL)** algorithms for **object detection**. \
+            \n\n[**YOLO**](https://missinglink.ai/guides/computer-vision/yolo-deep-learning-dont-think-twice/) performs object detection \
+            by classifying certain objects within the image and **determining where they are located** on it.\
+            \n\nFor example, if you input an image of a herd of sheep into a YOLO network, it will generate an output of a vector of bounding boxes\
+             for each individual sheep and classify it as such. Yolo is based on algorithms based on regression━they **scan the whole image** and make predictions to **localize**, \
+            identify and classify objects within the image. \
+            \n\nAlgorithms in this group are faster and can be used for **real-time** object detection.\
+            **YOLO V3** is an **improvement** over previous YOLO detection networks. \
+            Compared to prior versions, it features **multi-scale detection**, stronger feature extractor network, and some changes in the loss function.\
+            As a result, this network can now **detect many more targets from big to small**. \
+            And, of course, just like other **single-shot detectors**, \
+            YOLO V3 also runs **quite fast** and makes **real-time inference** possible on **GPU** devices.")
+    
     if image is not None:
+        st.write("## Preview 👀 Of Selected Image!")
         streamlit_preview_image(image)
 
         metric = st.sidebar.radio("metric ",["Confidence cutoff"])
@@ -478,7 +525,7 @@ if choice == "YoloV3 Detection and OCR" and image:
     st.warning("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
     st.text("""""")
     
-    show_prob = st.sidebar.checkbox('Show Probability')
+    
 
     if image is not None:
 
@@ -488,9 +535,12 @@ if choice == "YoloV3 Detection and OCR" and image:
 
         # Get parameter
         MIN_CONF = confidence_cutoff
+        show_prob = st.sidebar.checkbox('Show Probability')
         w, h = image.size
+
         # Inference
         if st.button('Run Inference'):
+
             # Initialization
             # load the COCO class labels our YOLO model was trained on
             labelsPath = config.LABEL_PATH
@@ -534,19 +584,33 @@ if choice == "YoloV3 Detection and OCR" and image:
             # Show result
             frame = cv2.resize(np.asarray(frame), (w, h))
             streamlit_output_image(frame, "YoloV3 Output")
-
+    
+        enhance_crop(crop)
+        streamlit_OCR(crop)
 
 elif choice == "About":
     about()
 
 st.text("""""")
 st.write("## How is this made?")
-st.write("The machine learning happens with a fine-tuned [Retinanet](https://arxiv.org/abs/1708.02002) or [YoloV3](https://pjreddie.com/darknet/yolo/) model ([Google's Tensorflow 2](https://www.tensorflow.org/)), \
-this front end (what you're reading) is built with [Streamlit](https://www.streamlit.io/) \
-and it's all hosted on [Google's App Engine](https://cloud.google.com/appengine/).")
-st.write("See the [code on GitHub](https://github.com/udaylunawat/Automatic-License-Plate-Recognition)")
+
+st.text("""""")
+banners = 'banners/'
+files = [banners+f for f in os.listdir(banners) if os.path.isfile(os.path.join(banners, f))]
+st.image(random.choice(files),use_column_width=True)
+
+st.markdown("- The machine learning happens  \
+    \n > - with a fine-tuned [**Retinanet**](https://arxiv.org/abs/1708.02002) or [**YoloV3**](https://pjreddie.com/darknet/yolo/) model ([**Google's Tensorflow 2**](https://www.tensorflow.org/)), \
+    \n- This front end (what you're reading) is built with [**Streamlit**](https://www.streamlit.io/) \
+    \n- It's all hosted on the cloud using [**Google Cloud Platform's App Engine**](https://cloud.google.com/appengine/).")
 # st.video("https://youtu.be/C_lIenSJb3c")
 #  and a [YouTube playlist](https://www.youtube.com/playlist?list=PL6vjgQ2-qJFeMrZ0sBjmnUBZNX9xaqKuM) detailing more below.")
 # or OpenCV Haar cascade
+
+
+st.write("""""")
+st.warning("#### Checkout the Source code on [GitHub](https://github.com/udaylunawat/Automatic-License-Plate-Recognition)")
+
+
 st.text("""""")
 st.write("Go to the About section from the sidebar to learn more about this project!")
