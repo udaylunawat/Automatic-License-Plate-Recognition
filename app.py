@@ -177,7 +177,7 @@ def detector(image_path):
 
     return drawn, max(scores[0]), draw, b
 
-
+@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=False)
 def cropped_image(image, b):
     crop = cv2.rectangle(np.array(draw), (int(b[0]), int(b[1])), (int(b[2]), int(b[3])), (0, 0, 255), 1)
     crop = crop[int(b[1]):int(b[3]), int(b[0]):int(b[2])]
@@ -204,6 +204,8 @@ def yolo_detect(frame, net, ln, Idx=0):
     boxes = []
     centroids = []
     confidences = []
+
+    start = time.time()
 
     # loop over each of the layer outputs
     for output in layerOutputs:
@@ -237,7 +239,7 @@ def yolo_detect(frame, net, ln, Idx=0):
                 boxes.append([x, y, int(width), int(height)])
                 centroids.append((centerX, centerY))
                 confidences.append(float(confidence))
-
+    print("Processing time for YOLOV3: --- %s seconds ---" % (time.time() - start))
     # apply non-maxima suppression to suppress weak, overlapping
     # bounding boxes
     idxs = cv2.dnn.NMSBoxes(boxes, confidences, MIN_CONF, NMS_THRESH)
@@ -261,14 +263,16 @@ def yolo_detect(frame, net, ln, Idx=0):
 
 @st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=False)
 def streamlit_preview_image(image):
-    st.image(
+    placeholder = st.empty()
+    placeholder.image(
     image,
     use_column_width=True,
     caption = "Original Image")
 
 @st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=False)
 def streamlit_output_image(image, caption):
-    st.image(
+    placeholder = st.empty()
+    placeholder.image(
     image,
     use_column_width=True,
     caption = caption)
@@ -296,6 +300,7 @@ def about():
 
 #======================== Time To See The Magic ===========================
 st.beta_set_page_config(page_title="Ex-stream-ly Cool App", page_icon="🧊",layout="centered",initial_sidebar_state="expanded")
+model = load_detector_model()
 crop, image = None, None
 img_size, crop_size = 600, 400
 
@@ -372,13 +377,11 @@ if choice == "RetinaNet Detection and OCR" and image:
     st.warning("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
     st.text("""""")
     # if st.button("Make a Prediction 🔥"):
-    model = load_detector_model()
     
     if image:
         try:
             with st.spinner('Doing the Math...'):
                 annotated_image, score, draw, b = detector(IMAGE_PATH)
-                time.sleep(3)
             st.subheader("License Plate Detection!")
             streamlit_output_image(annotated_image, 'Annotated Image with confidence score: {0:.2f}'.format(score))
             crop = cropped_image(draw, b)
