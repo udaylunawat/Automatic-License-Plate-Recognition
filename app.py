@@ -533,9 +533,6 @@ if choice == "YoloV3 Detection and OCR" and image:
             streamlit_output_image(frame, "YoloV3 Output")
 
 
-
-
-
 elif choice == "About":
     about()
 
