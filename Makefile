@@ -8,9 +8,12 @@ PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 BUCKET = [OPTIONAL] your-bucket-for-syncing-data (do not include 's3://')
 PROFILE = default
 PYTHON_INTERPRETER = python3
+
 JSON_DOWNLOAD_URL = https://www.dropbox.com/s/8netfite5znq6o4/Indian_Number_plates.json
 IMAGES_ZIP = https://www.dropbox.com/s/k3mhm1kz192bwue/Indian_Number_Plates.7z
-INFERENCE = https://storage.googleapis.com/dracarys3_bucket/ALPR/license_plate/ALPR/retinanet_inference/plate_inference_tf2_2.h5
+INFERENCE = https://storage.googleapis.com/dracarys3_bucket/Public/plate_inference_tf2_2.h5
+YOLO_W = https://storage.googleapis.com/dracarys3_bucket/Public/yolov3-custom_last.weights
+
 ifeq (,$(shell which conda))
 HAS_CONDA=False
 else
@@ -27,8 +30,9 @@ requirements: test_environment
 	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
 
 ## Make Dataset
-data:	requirements directory_setup json_7z serialize_csv rawpreprocess
+data: requirements directory_setup json_7z serialize_csv rawpreprocess
 retinanet: pascalvoc inference_download retinanet_source
+yolo: yolo_last_weights
 ETL: data retinanet
 
 directory_setup:
@@ -61,6 +65,9 @@ retinanet_source:
 	cd keras-retinanet
 	$(PYTHON_INTERPRETER) setup.py build_ext --inplace
 	cd ..
+
+yolo_last_weights:
+	wget -c $(YOLO_W) -O  cfg/yolov3-custom_last.weights
 
 ## Train Model
 train: data
