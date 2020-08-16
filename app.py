@@ -92,12 +92,10 @@ def streamlit_OCR(crop):
         if OCR_type == "Google's Tesseract OCR":
             try:
                 tessy_ocr = OCR(output_image)
-                if tessy_ocr!='' and tessy_ocr is not None:
-                    st.success("Google's Tesseract OCR: " + tessy_ocr)
-                else:
-                    st.error("Google's Tesseract OCR Failed! :sob:")
+                st.success("Google's Tesseract OCR: " + tessy_ocr)
             except:
-                pass
+                st.error("Google's Tesseract OCR Failed! :sob:")
+
 
         elif OCR_type == "easy_OCR":	
             try:
@@ -490,7 +488,6 @@ if choice == "YoloV3 Detection and OCR":
         yolo_dir = 'banners/yolo/'
         yolo_banner = random.choice(listdir(yolo_dir))
         st.sidebar.markdown("\n")
-        st.sidebar.markdown(yolo_banner)
         st.sidebar.image(yolo_dir+yolo_banner, use_column_width=True)
         
         st.sidebar.markdown(
