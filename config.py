@@ -6,9 +6,9 @@ import numpy as np
 # Docker Path
 DIR_PATH = ''
 
-model = 'output/yolov3-custom_last.weights'
-model_config = 'output/yolov3-custom.cfg'
-labels = 'output/obj.names'
+model = 'cfg/yolov3-custom_last.weights'
+model_config = 'cfg/yolov3-custom.cfg'
+labels = 'cfg/obj.names'
 # input_videos = 'videos/'
 # output_video = 'output/output_video.mp4'
 
