@@ -27,9 +27,9 @@ requirements: test_environment
 	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
 
 ## Make Dataset
-data:	requirements directory_setup download_json serialize_csv rawpreprocess pascalvoc
-download_json:	json_7z
-
+data:	requirements directory_setup json_7z serialize_csv rawpreprocess
+retinanet: pascalvoc inference_download retinanet_source
+ETL: data retinanet
 
 directory_setup:
 	mkdir -p data/0_raw data/1_external data/2_interim data/3_processed data/0_raw/Indian_Number_Plates
@@ -52,10 +52,6 @@ pascalvoc:
 	cp data/0_raw/Indian_Number_Plates/* data/3_processed/VOC/JPEGImages
 	$(PYTHON_INTERPRETER) src/data/generate_pascalvoc.py data/0_raw/Indian_Number_plates.json data/3_processed/VOC/JPEGImages data/3_processed/VOC/Annotations
 
-## Train Model
-train: data
-	$(PYTHON_INTERPRETER) src/models/train_model.py
-
 inference_download:
 	wget -c $(INFERENCE) -O output/models/inference/plate_inference_tf2.h5 -q --show-progress
 
@@ -65,6 +61,10 @@ retinanet_source:
 	cd keras-retinanet
 	$(PYTHON_INTERPRETER) setup.py build_ext --inplace
 	cd ..
+
+## Train Model
+train: data
+	$(PYTHON_INTERPRETER) src/models/train_model.py
 
 ## Delete all compiled Python files
 clean:
