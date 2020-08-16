@@ -585,8 +585,8 @@ if choice == "YoloV3 Detection and OCR":
             frame = cv2.resize(np.asarray(frame), (w, h))
             streamlit_output_image(frame, "YoloV3 Output")
     
-        enhance_crop(crop)
-        streamlit_OCR(crop)
+            enhance_crop(frame)
+            streamlit_OCR(frame)
 
 elif choice == "About":
     about()
