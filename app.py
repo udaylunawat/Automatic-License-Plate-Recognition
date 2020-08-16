@@ -8,7 +8,7 @@
 """
 
 import streamlit as st
-
+import config
 import cv2
 import numpy as np
 import os
@@ -18,7 +18,7 @@ import time
 import pytesseract
 from PIL import Image,ImageEnhance
 import random
-
+import pandas as pd
 # Machine Learning frameworks
 # from keras import backend as K
 from keras_retinanet import models
@@ -34,6 +34,11 @@ tb._SYMBOLIC_SCOPE.value = True
 
 # load label to names mapping for visualization purposes
 labels_to_names = {0: 'number_plate'}
+
+
+# YOLO Constant
+MIN_CONF = 0.5
+NMS_THRESH = 0.3
 #================================= Functions =================================
 
 @st.cache()
@@ -118,7 +123,7 @@ def inference(model, image, scale): # session
     boxes, scores, labels = model.predict_on_batch(np.expand_dims(image, axis=0))
     
     processing_time = time.time() - start
-    st.error("Processing time: {0:.3f} seconds!!".format(processing_time))
+    st.error("Processing time for RetinaNet: {0:.3f} seconds!!".format(processing_time))
     # correct for image scale
     boxes /= scale
     return boxes, scores, labels
@@ -180,6 +185,94 @@ def cropped_image(image, b):
 
     return crop
 
+def yolo_detect(frame, net, ln, Idx=0):
+    # grab the dimensions of the frame and  initialize the list of
+    # results
+    (H, W) = frame.shape[:2]
+    results = []
+
+    # construct a blob from the input frame and then perform a forward
+    # pass of the YOLO object detector, giving us our bounding boxes
+    # and associated probabilities
+    blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (416, 416),
+        swapRB=True, crop=False)
+    net.setInput(blob)
+    layerOutputs = net.forward(ln)
+
+    # initialize our lists of detected bounding boxes, centroids, and
+    # confidences, respectively
+    boxes = []
+    centroids = []
+    confidences = []
+
+    # loop over each of the layer outputs
+    for output in layerOutputs:
+        # loop over each of the detections
+        for detection in output:
+            # extract the class ID and confidence (i.e., probability)
+            # of the current object detection
+            scores = detection[5:]
+            classID = np.argmax(scores)
+            confidence = scores[classID]
+
+            # filter detections by (1) ensuring that the object
+            # detected was a person and (2) that the minimum
+            # confidence is met
+            if classID == Idx and confidence > MIN_CONF:
+                # scale the bounding box coordinates back relative to
+                # the size of the image, keeping in mind that YOLO
+                # actually returns the center (x, y)-coordinates of
+                # the bounding box followed by the boxes' width and
+                # height
+                box = detection[0:4] * np.array([W, H, W, H])
+                (centerX, centerY, width, height) = box.astype("int")
+
+                # use the center (x, y)-coordinates to derive the top
+                # and and left corner of the bounding box
+                x = int(centerX - (width / 2))
+                y = int(centerY - (height / 2))
+
+                # update our list of bounding box coordinates,
+                # centroids, and confidences
+                boxes.append([x, y, int(width), int(height)])
+                centroids.append((centerX, centerY))
+                confidences.append(float(confidence))
+
+    # apply non-maxima suppression to suppress weak, overlapping
+    # bounding boxes
+    idxs = cv2.dnn.NMSBoxes(boxes, confidences, MIN_CONF, NMS_THRESH)
+
+    # ensure at least one detection exists
+    if len(idxs) > 0:
+        # loop over the indexes we are keeping
+        for i in idxs.flatten():
+            # extract the bounding box coordinates
+            (x, y) = (boxes[i][0], boxes[i][1])
+            (w, h) = (boxes[i][2], boxes[i][3])
+
+            # update our results list to consist of the person
+            # prediction probability, bounding box coordinates,
+            # and the centroid
+            r = (confidences[i], (x, y, x + w, y + h), centroids[i])
+            results.append(r)
+
+    # return the list of results
+    return results
+
+@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=False)
+def streamlit_preview_image(image):
+    st.image(
+    image,
+    use_column_width=True,
+    caption = "Original Image")
+
+@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=False)
+def streamlit_output_image(image, caption):
+    st.image(
+    image,
+    use_column_width=True,
+    caption = caption)
+
 #============================ About ==========================
 def about():
     st.header("Deployed this Streamlit app with Docker on GCP (Google Cloud Platform) ")
@@ -220,7 +313,7 @@ st.write("## Upload your own image")
 st.markdown("👈 Please open sidebar to choose an existing image or upload your own image.")
 
 
-activities = ["Detection and OCR", "About"]
+activities = ["RetinaNet Detection and OCR", "YoloV3 Detection and OCR", "About"]
 choice = st.sidebar.selectbox("Select Task", activities)
 
 
@@ -233,11 +326,11 @@ query_params = st.experimental_get_query_params()
 # Setting default page as Upload page, checkout the url too. The page state can be shared now!
 default = int(query_params['activity'][0]) if 'activity' in query_params else 1
 
-activity = st.sidebar.radio("Choose existing sample or try your own:",radio_list,index=default)
+activity = st.radio("Choose existing sample or try your own:",radio_list,index=default)
 if activity:
     st.experimental_set_query_params(activity=radio_list.index(activity))
     if activity == 'Choose existing':
-        imageselect = st.sidebar.selectbox("Pick from existing samples", (samplefiles))
+        imageselect = st.selectbox("Pick from existing samples", (samplefiles))
         image = Image.open('data/sample_images/'+imageselect)
         IMAGE_PATH = 'data/sample_images/'+imageselect
         image = Image.open('data/sample_images/'+imageselect)
@@ -245,7 +338,7 @@ if activity:
 
     else:
         # You can specify more file types below if you want
-        img_file_buffer = st.sidebar.file_uploader("Upload image", type=['jpeg', 'png', 'jpg', 'webp'], multiple_files = True)
+        img_file_buffer = st.file_uploader("Upload image", type=['jpeg', 'png', 'jpg', 'webp'], multiple_files = True)
         st.text("""""")
         IMAGE_PATH = img_file_buffer
         try:
@@ -254,21 +347,18 @@ if activity:
             pass
 
         if image == None:
-            st.sidebar.success("Upload Image!")
+            st.success("Upload Image!")
         imageselect = None
 
 st.text("""""")
 
-if choice == "Detection and OCR" and image:
+
+if choice == "RetinaNet Detection and OCR" and image:
     
     st.write("## Preview 👀 Of Selected Image!")
 
     if image is not None:
-        st.image(
-            image,
-            use_column_width=True,
-            caption = 'Original Image'
-        )
+        streamlit_preview_image(image)
 
         metric = st.sidebar.radio("metric ",["Confidence cutoff"])
 
@@ -290,10 +380,7 @@ if choice == "Detection and OCR" and image:
                 annotated_image, score, draw, b = detector(IMAGE_PATH)
                 time.sleep(3)
             st.subheader("License Plate Detection!")
-            st.image(
-                annotated_image, 
-                caption = 'Annotated Image with confidence score: {0:.2f}'.format(score),
-                use_column_width=True)
+            streamlit_output_image(annotated_image, 'Annotated Image with confidence score: {0:.2f}'.format(score))
             crop = cropped_image(draw, b)
         except TypeError:
             st.error('''
@@ -369,7 +456,86 @@ if choice == "Detection and OCR" and image:
             elif OCR_type == "Secret Combo All-out Attack!!":
                 st.text("""""")
                 try_all_OCR(output_image)
-                
+
+if choice == "YoloV3 Detection and OCR" and image:
+    st.write("## Preview 👀 Of Selected Image!")
+
+    if image is not None:
+        streamlit_preview_image(image)
+
+        metric = st.sidebar.radio("metric ",["Confidence cutoff"])
+
+        # Detections below this confidence will be ignored
+        confidence_cutoff = st.sidebar.slider("Cutoff",0.0,1.0,(0.5))
+
+    
+    st.text("""""")
+
+    
+    st.warning("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
+    st.text("""""")
+    
+    show_prob = st.sidebar.checkbox('Show Probability')
+
+    if image is not None:
+
+        # YOLO Detection
+        # Preprocess
+        frame = cv2.resize(np.asarray(image), (416, 416))
+
+        # Get parameter
+        MIN_CONF = confidence_cutoff
+        w, h = image.size
+        # Inference
+        if st.button('Run Inference'):
+            # Initialization
+            # load the COCO class labels our YOLO model was trained on
+            labelsPath = config.LABEL_PATH
+            LABELS = open(labelsPath).read().strip().split("\n")
+
+            # derive the paths to the YOLO weights and model configuration
+            weightsPath = config.MODEL_PATH
+            configPath = config.CONFIG_PATH
+
+            # load our YOLO object detector trained on COCO dataset (80 classes)
+            net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
+
+            # determine only the *output* layer names that we need from YOLO
+            ln = net.getLayerNames()
+            ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+            
+            start = time.time()
+            results = yolo_detect(frame, net, ln, Idx=LABELS.index("number_plate"))
+            processing_time = time.time() - start
+            st.error("Processing time for YOLOV3: {0:.3f} seconds!!".format(processing_time))
+
+            if show_prob:
+                # Show detection results in dataframe
+                probs = [result[0] for result in results]
+                df = pd.DataFrame(dict(ID=list(range(len(results))), Prob=probs))
+                st.dataframe(df)
+
+                # Simple plot
+                st.line_chart(df['Prob'])
+
+            # Loop over the results
+            for (i, (prob, bbox, centroid)) in enumerate(results):
+                # Extract the bounding box and centroid coordinates
+                (startX, startY, endX, endY) = bbox
+                (cX, cY) = centroid
+
+                # Overlay
+                cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
+                # cv2.circle(frame, (cX, cY), 5, (0, 255, 0), 1)
+
+            # Show result
+            frame = cv2.resize(np.asarray(frame), (w, h))
+            streamlit_output_image(frame, "YoloV3 Output")
+
+
+
+
+
 elif choice == "About":
     about()
 
@@ -381,6 +547,6 @@ and it's all hosted on [Google's App Engine](https://cloud.google.com/appengine/
 st.write("See the [code on GitHub](https://github.com/udaylunawat/Automatic-License-Plate-Recognition)")
 # st.video("https://youtu.be/C_lIenSJb3c")
 #  and a [YouTube playlist](https://www.youtube.com/playlist?list=PL6vjgQ2-qJFeMrZ0sBjmnUBZNX9xaqKuM) detailing more below.")
-
+# or OpenCV Haar cascade
 st.text("""""")
 st.write("Go to the About section from the sidebar to learn more about this project!")
