@@ -539,54 +539,54 @@ if choice == "YoloV3 Detection and OCR":
         w, h = image.size
 
         # Inference
-        if st.button('Run Inference'):
+        # if st.button('Run Inference'):
 
-            # Initialization
-            # load the COCO class labels our YOLO model was trained on
-            labelsPath = config.LABEL_PATH
-            LABELS = open(labelsPath).read().strip().split("\n")
+        # Initialization
+        # load the COCO class labels our YOLO model was trained on
+        labelsPath = config.LABEL_PATH
+        LABELS = open(labelsPath).read().strip().split("\n")
 
-            # derive the paths to the YOLO weights and model configuration
-            weightsPath = config.MODEL_PATH
-            configPath = config.CONFIG_PATH
+        # derive the paths to the YOLO weights and model configuration
+        weightsPath = config.MODEL_PATH
+        configPath = config.CONFIG_PATH
 
-            # load our YOLO object detector trained on COCO dataset (80 classes)
-            net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
+        # load our YOLO object detector trained on COCO dataset (80 classes)
+        net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
 
-            # determine only the *output* layer names that we need from YOLO
-            ln = net.getLayerNames()
-            ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-            
-            start = time.time()
-            results = yolo_detect(frame, net, ln, Idx=LABELS.index("number_plate"))
-            processing_time = time.time() - start
-            st.error("Processing time for YOLOV3: {0:.3f} seconds!!".format(processing_time))
+        # determine only the *output* layer names that we need from YOLO
+        ln = net.getLayerNames()
+        ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+        
+        start = time.time()
+        results = yolo_detect(frame, net, ln, Idx=LABELS.index("number_plate"))
+        processing_time = time.time() - start
+        st.error("Processing time for YOLOV3: {0:.3f} seconds!!".format(processing_time))
 
-            if show_prob:
-                # Show detection results in dataframe
-                probs = [result[0] for result in results]
-                df = pd.DataFrame(dict(ID=list(range(len(results))), Prob=probs))
-                st.dataframe(df)
+        if show_prob:
+            # Show detection results in dataframe
+            probs = [result[0] for result in results]
+            df = pd.DataFrame(dict(ID=list(range(len(results))), Prob=probs))
+            st.dataframe(df)
 
-                # Simple plot
-                st.line_chart(df['Prob'])
+            # Simple plot
+            st.line_chart(df['Prob'])
 
-            # Loop over the results
-            for (i, (prob, bbox, centroid)) in enumerate(results):
-                # Extract the bounding box and centroid coordinates
-                (startX, startY, endX, endY) = bbox
-                (cX, cY) = centroid
+        # Loop over the results
+        for (i, (prob, bbox, centroid)) in enumerate(results):
+            # Extract the bounding box and centroid coordinates
+            (startX, startY, endX, endY) = bbox
+            (cX, cY) = centroid
 
-                # Overlay
-                cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
-                # cv2.circle(frame, (cX, cY), 5, (0, 255, 0), 1)
+            # Overlay
+            cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
+            # cv2.circle(frame, (cX, cY), 5, (0, 255, 0), 1)
 
-            # Show result
-            frame = cv2.resize(np.asarray(frame), (w, h))
-            streamlit_output_image(frame, "YoloV3 Output")
-    
-            enhance_crop(frame)
-            streamlit_OCR(frame)
+        # Show result
+        frame = cv2.resize(np.asarray(frame), (w, h))
+        streamlit_output_image(frame, "YoloV3 Output")
+
+        enhance_crop(frame)
+        streamlit_OCR(frame)
 
 elif choice == "About":
     about()
