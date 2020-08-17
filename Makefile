@@ -67,7 +67,7 @@ retinanet_source:
 	cd ..
 
 yolo_last_weights:
-	wget -c $(YOLO_W) -O  cfg/yolov3-custom_last.weights
+	wget -c $(YOLO_W) -O  output/models/inference/yolov3-custom_last.weights
 
 ## Train Model
 train: data

@@ -461,7 +461,7 @@ def model_select():
                 st.success("Upload Image!")
             imageselect = None
 
-    return image, imageselect
+    return image, imageselect, IMAGE_PATH
 
 #======================== Time To See The Magic ===========================
 
@@ -516,7 +516,7 @@ st.text("""""")
 model = load_detector_model()
 
 if choice == "RetinaNet Detection":
-    image, imageselect = model_select()
+    image, imageselect, IMAGE_PATH = model_select()
     if image is None:
         about_retinanet()
 
@@ -559,7 +559,7 @@ if choice == "RetinaNet Detection":
 
 
 if choice == "YoloV3 Detection":
-    image, imageselect = model_select()
+    image, imageselect, IMAGE_PATH = model_select()
     if image is None:
         about_yolo()
     
