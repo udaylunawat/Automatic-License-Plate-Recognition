@@ -80,7 +80,7 @@ def OCR(crop_image):
         pass
     return text_output
 
-def streamlit_OCR(crop):
+def streamlit_OCR(output_image):
     st.text("""""")
     st.write("## 🎅 Bonus:- Optical Character Recognition (OCR)")
     st.warning("Note: Here, OCR is performed on the enhanced cropped images.")
@@ -582,7 +582,7 @@ if choice == "YoloV3 Detection and OCR":
         frame = cv2.resize(np.asarray(frame), (w, h))
         streamlit_output_image(frame, "YoloV3 Output")
 
-        enhance_crop(frame)
+        enhance_crop(Image.fromarray(frame))
         streamlit_OCR(frame)
 
 elif choice == "About":
