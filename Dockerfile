@@ -1,4 +1,5 @@
-FROM continuumio/miniconda3
+FROM tensorflow/tensorflow:2.2.0-jupyter
+# FROM continuumio/miniconda3
 # LABEL maintainer="Uday Lunawat @dracarys3"
 
 # Packages for make
