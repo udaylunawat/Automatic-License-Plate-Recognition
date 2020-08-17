@@ -22,8 +22,9 @@ import pytesseract
 from PIL import Image,ImageEnhance
 import random
 import pandas as pd
+
 # Machine Learning frameworks
-from tensorflow.keras import backend as K
+from keras import backend as K
 from keras_retinanet import models
 from keras_retinanet.utils.image import preprocess_image, resize_image
 
@@ -31,10 +32,14 @@ from keras_retinanet.utils.image import preprocess_image, resize_image
 from pyngrok import ngrok
 import webbrowser
 
-# https://github.com/keras-team/keras/issues/13353#issuecomment-545459472
-# import keras.backend.tensorflow_backend as tb
-# tb._SYMBOLIC_SCOPE.value = True
+from streamlit import caching
 
+# import easyocr
+
+# https://github.com/keras-team/keras/issues/13353#issuecomment-545459472
+import keras.backend.tensorflow_backend as tb
+tb._SYMBOLIC_SCOPE.value = True
+tb.clear_session()
 # load label to names mapping for visualization purposes
 labels_to_names = {0: 'number_plate'}
 
@@ -61,7 +66,6 @@ def try_all_OCR(crop_image):
 
 @st.cache()
 def e_OCR(crop):
-    import easyocr
     reader = easyocr.Reader(['en'])
     ocr_output = reader.readtext(np.array(crop))
     plate_text = ''
@@ -81,9 +85,9 @@ def OCR(crop_image):
     return text_output
 
 def streamlit_OCR(output_image):
-    st.text("""""")
+
     st.write("## 🎅 Bonus:- Optical Character Recognition (OCR)")
-    st.text("""""")
+
     
     OCR_type = st.sidebar.radio("OCR Mode",["easy_OCR","Google's Tesseract OCR","Secret Combo All-out Attack!!"])
     st.warning("Note: OCR is performed on the enhanced cropped images.")
@@ -91,10 +95,10 @@ def streamlit_OCR(output_image):
     if OCR_type == "Google's Tesseract OCR":
         st.error("Researching Google's Tesseract OCR is a work in progress 🚧\
                 \nThe results might be unreliable.")
-    st.text("""""")
+
     placeholder = st.empty()
     note = st.empty()
-    st.text("""""")
+
     if st.button('Recognize Characters !!'):
         
         if OCR_type == "Google's Tesseract OCR":
@@ -105,24 +109,24 @@ def streamlit_OCR(output_image):
                 placeholder.error("Google's Tesseract OCR Failed! :sob:")
             else:
                 placeholder.success("Google's Tesseract OCR: " + tessy_ocr)
-                st.text("""""")
+
 
 
         elif OCR_type == "easy_OCR":	
             try:
                 easy_ocr = e_OCR(output_image)
-                
-                st.text("""""")
+
                 placeholder.success("easy OCR: " + easy_ocr)
                 st.balloons()
-            
+            except NameError:
+                placeholder.error("EasyOCR not installed")
             except ModuleNotFoundError:
                 placeholder.error("EasyOCR not installed")
             except:
                 placeholder.error("Easy OCR Failed! :sob:")
 
         elif OCR_type == "Secret Combo All-out Attack!!":
-            st.text("""""")
+
             try_all_OCR(output_image)
     
 
@@ -135,11 +139,12 @@ def cannize_image(our_image):
 
 @st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=False)
 def load_detector_model():
-
+    K.clear_session()
     model_path = 'output/models/inference/plate_inference_tf2.h5'
 
     # load retinanet model
     print("Loading Model: {}".format(model_path))
+
     model = models.load_model(model_path, backbone_name='resnet50')
 
     #Check that it's been converted to an inference model
@@ -147,7 +152,8 @@ def load_detector_model():
         model = models.convert_model(model)
     except:
         print("Model is likely already an inference model")
-    return model 
+
+    return model
 
 def image_preprocessing(image):
     # copy to draw on
@@ -178,7 +184,8 @@ def inference(model, image, scale): # session
 
 
 def draw_detections(draw, boxes, scores, labels):
-
+    draw2 = draw.copy()
+    crop_list = []
     b = None
     # visualize detections
     for box, score, label in zip(boxes[0], scores[0], labels[0]):
@@ -192,6 +199,9 @@ def draw_detections(draw, boxes, scores, labels):
         b = np.array(box).astype(int)
 
         try:
+            crop_list.append([cropped_image(draw2, (b[0], b[1], b[2], b[3]) ), score])
+            # st.image(cropped_image(draw2, (b[0], b[1], b[2], b[3]) ), width=300, caption=score)
+
             cv2.rectangle(draw, (b[0], b[1]), (b[2], b[3]), color, thickness, cv2.LINE_AA)
 
             if(label > len(labels_to_names)):
@@ -206,7 +216,7 @@ def draw_detections(draw, boxes, scores, labels):
         except TypeError as e:
             st.error("No plate detected")
         
-    return (b[0], b[1], b[2], b[3]), draw
+    return (b[0], b[1], b[2], b[3]), draw, crop_list
 
 
 def detector(image_path):
@@ -215,7 +225,7 @@ def detector(image_path):
     
     image, draw, scale = image_preprocessing(image)
     boxes, scores, labels = inference(model, image, scale) # session
-    b, draw = draw_detections(draw, boxes, scores, labels)
+    b, draw, crop_list = draw_detections(draw, boxes, scores, labels)
 
     #Write out image
     drawn = Image.fromarray(draw)
@@ -223,7 +233,7 @@ def detector(image_path):
     # draw.save(image_output_path)
     # print("Model saved at", image_output_path)
 
-    return drawn, max(scores[0]), draw, b
+    return drawn, max(scores[0]), draw, b, crop_list
 
 
 @st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=False)
@@ -234,10 +244,13 @@ def cropped_image(image, b):
 
     return crop
 
+# def max_confidence_crop(crop_list):
+    
+
 def enhance_crop(crop):
 
     if crop is not None:
-        st.subheader("Cropped License Plate")
+        st.write("## Enhance License Plate")
 
         enhance_type = st.sidebar.radio("Enhance Type",["Original","Gray-Scale","Contrast","Brightness","Blurring","Cannize"])
 
@@ -377,7 +390,6 @@ def about():
     st.success("""
     To see how it works, please click the button below!
         """)
-    st.text("""""")
     github = st.button("👉🏼 Click Here To See How It Works")
     if github:
         github_link = "https://github.com/udaylunawat/Automatic-License-Plate-Recognition"
@@ -389,6 +401,7 @@ def about():
                 """)
     st.info("Built with Streamlit by [Uday Lunawat 😎](https://github.com/udaylunawat)")
 
+@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=True)
 def about_yolo():
     yolo_dir = 'banners/yolo/'
     yolo_banner = random.choice(listdir(yolo_dir))
@@ -411,6 +424,7 @@ def about_yolo():
         And, of course, just like other **single-shot detectors**, \
         YOLO V3 also runs **quite fast** and makes **real-time inference** possible on **GPU** devices.")
 
+@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=True)
 def about_retinanet():
     od_dir = 'banners/Object detection/'
     od_banner = random.choice(listdir(od_dir))
@@ -426,7 +440,7 @@ def about_retinanet():
 
 def model_select():
     crop, image = None, None
-    st.write("""""")
+
     st.write("## Upload your own image")
     samplefiles = sorted([sample for sample in listdir('data/sample_images')])
     radio_list = ['Choose existing', 'Upload']
@@ -450,7 +464,7 @@ def model_select():
         else:
             # You can specify more file types below if you want
             img_file_buffer = st.file_uploader("Upload image", type=['jpeg', 'png', 'jpg', 'webp'], multiple_files = True)
-            st.text("""""")
+
             IMAGE_PATH = img_file_buffer
             try:
                 image = Image.open(img_file_buffer)
@@ -472,16 +486,13 @@ img_size, crop_size = 600, 400
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
 
-
-
-
 activities = ["Home", "RetinaNet Detection", "YoloV3 Detection", "About"]
 choice = st.sidebar.radio("Go to", activities)
 
 
-
-
 if choice == "Home":
+    caching.clear_cache()
+
     st.markdown("<h1 style='text-align: center; color: black;'>Indian ALPR System using Deep Learning 👁</h1>", unsafe_allow_html=True)
     st.sidebar.info(__doc__)
     st.write("## How does it work?")
@@ -490,10 +501,8 @@ if choice == "Home":
             caption="Example of a model being run on a car.",
             use_column_width=True)
 
-    st.text("""""")
     st.write("## How is this made?")
 
-    st.text("""""")
     banners = 'banners/'
     files = [banners+f for f in os.listdir(banners) if os.path.isfile(os.path.join(banners, f))]
     st.image(random.choice(files),use_column_width=True)
@@ -507,15 +516,11 @@ if choice == "Home":
     #  and a [YouTube playlist](https://www.youtube.com/playlist?list=PL6vjgQ2-qJFeMrZ0sBjmnUBZNX9xaqKuM) detailing more below.")
     # or OpenCV Haar cascade
 
-
-    st.write("""""")
     st.sidebar.warning("#### Checkout the Source code on [GitHub](https://github.com/udaylunawat/Automatic-License-Plate-Recognition)")
 
-K.clear_session()
-st.text("""""")
-model = load_detector_model()
-
 if choice == "RetinaNet Detection":
+    model = load_detector_model() # putting load_detector inside here fixed 
+    
     image, imageselect, IMAGE_PATH = model_select()
     if image is None:
         about_retinanet()
@@ -531,31 +536,37 @@ if choice == "RetinaNet Detection":
 
         # Detections below this confidence will be ignored
         confidence_cutoff = st.sidebar.slider("Cutoff",0.0,1.0,(0.5))
-
-    
-    st.text("""""")
-
     
     st.warning("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
-    st.text("""""")
     # if st.button("Make a Prediction 🔥"):
     
     if image:
         try:
-            with st.spinner('Doing the Math...'):
-                annotated_image, score, draw, b = detector(IMAGE_PATH)
-            st.subheader("License Plate Detection!")
-            streamlit_output_image(annotated_image, 'Annotated Image with confidence score: {0:.2f}'.format(score))
-            crop = cropped_image(draw, b)
-        except TypeError:
+            with st.spinner('Calculating...'):
+
+                annotated_image, score, draw, b, crop_list = detector(IMAGE_PATH)
+            st.write("## License Plate Detection!")
+            streamlit_output_image(annotated_image, 'Annotated Image with model confidence score: {0:.2f}'.format(score))
+            
+            st.write("### Cropped Plates")
+
+            img_list, score_list =  map(list, zip(*crop_list))
+            st.image(img_list, caption=["Cropped Image with model confidence score:"+'{0:.2f}'.format(score) for score in score_list], width = 300)
+
+            # https://dbader.org/blog/python-min-max-and-nested-lists
+            max_crop, max_conf = None, None
+            [max_crop, max_conf] = max(crop_list, key=lambda x: x[1])
+
+            enhance_crop(max_crop)
+            streamlit_OCR(crop)
+        except TypeError as e:
             st.error('''
             Model is not confident enough!
             \nTry lowering the confidence cutoff score from sidebar.
             ''')
+            st.error(e)
 
 
-        enhance_crop(crop)
-        streamlit_OCR(crop)
 
 
 if choice == "YoloV3 Detection":
@@ -574,16 +585,9 @@ if choice == "YoloV3 Detection":
 
         # Detections below this confidence will be ignored
         confidence_cutoff = st.sidebar.slider("Cutoff",0.0,1.0,(0.5))
-
-    
-    st.text("""""")
-
     
     st.warning("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
-    st.text("""""")
     
-    
-
     if image is not None:
 
         # YOLO Detection
@@ -639,16 +643,18 @@ if choice == "YoloV3 Detection":
         image = cv2.resize(np.asarray(frame), (w, h)) # resizing image as yolov3 gives 416*416 as output
         streamlit_output_image(image, "YoloV3 Output")
 
-        try:
-            crop = cropped_image(frame, (startX, startY, endX, endY))
-            # crop = cv2.resize(np.asarray(crop), (w, h))
-        except TypeError:
-            st.error('''
-            Model is not confident enough!
-            \nTry lowering the confidence cutoff score from sidebar.
-            ''')
+        # try:
+        crop = cropped_image(frame, (startX, startY, endX, endY))
+        # crop = cv2.resize(np.asarray(crop), (w, h))
+
         enhance_crop(np.array(crop))
         streamlit_OCR(crop)
+        # except:
+        #     st.error('''
+        #     Model is not confident enough!
+        #     \nTry lowering the confidence cutoff score from sidebar.
+        #     ''')
+
 
 elif choice == "About":
     about()
