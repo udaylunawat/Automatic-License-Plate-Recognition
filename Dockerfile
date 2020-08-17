@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3
+FROM alpine
 # LABEL maintainer="Uday Lunawat @dracarys3"
 
 # Packages for make
