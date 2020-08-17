@@ -30,10 +30,10 @@ requirements: test_environment
 	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
 
 ## Make Dataset
-data: requirements directory_setup json_7z serialize_csv rawpreprocess
+data: directory_setup json_7z serialize_csv rawpreprocess
 retinanet: pascalvoc inference_download retinanet_source
 yolo: yolo_last_weights
-ETL: data retinanet
+ETL: requirements data retinanet yolo
 
 directory_setup:
 	mkdir -p data/0_raw data/1_external data/2_interim data/3_processed data/0_raw/Indian_Number_Plates
