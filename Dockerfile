@@ -2,12 +2,7 @@ FROM continuumio/miniconda3
 # LABEL maintainer="Uday Lunawat @dracarys3"
 
 # Packages for make
-RUN apt-get update  -y && apt-get upgrade -y && \
-    apt-get -y install --upgrade pip wget git build-essential \
-    libsm6 libxext6 libxrender-dev libgl1-mesa-glx \
-    software-properties-common && \
-    add-apt-repository ppa:alex-p/tesseract-ocr && \
-    apt-get -y install p7zip-full tesseract-ocr libtesseract-dev 
+RUN sudo apt-get update -y && sudo apt-get upgrade -y && sudo apt-get -y install wget git build-essential libsm6 libxext6 libxrender-dev libgl1-mesa-glx software-properties-common && sudo add-apt-repository -y ppa:alex-p/tesseract-ocr && sudo apt-get -y install p7zip-full tesseract-ocr libtesseract-dev 
 
 # setting work directory and copying content
 WORKDIR /app
