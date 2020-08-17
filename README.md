@@ -41,11 +41,17 @@ Project Organization
 ------------
 
     ├── .gitignore                        <- GitHub's excellent Python .gitignore customized for this project
+    ├── .dockerignore                     <- Docker ignore
+    ├── app.yaml                          <- contains configuration that is applied to each container started
+    │                                        for that service
+    ├── config.py                         <- Global configuration variables
     ├── LICENSE                           <- Your project's license.
     ├── Makefile                          <- Makefile with commands like `make data` or `make train`
     ├── README.md                         <- The top-level README for developers using this project.
     ├── tox.ini                           <- tox file with settings for running tox; see tox.readthedocs.io
+    ├── banners                           <- Images for skill banner and project banner
     ├── data
+    │   ├── sample_images                 <- Sample images for inference
     │   ├── 0_raw                         <- The original, immutable data dump.
     │   ├── 1_external                    <- Data from third party sources.
     │   ├── 2_interim                     <- Intermediate data that has been transformed.
@@ -54,8 +60,8 @@ Project Organization
     ├── docs                              <- Streamlit / GitHub pages website
     │
     ├── notebooks                         <- Jupyter notebooks. Naming convention is a number (for ordering),
-    │                                         the creator's initials, and a short `-` delimited description, e.g.
-    │                         `               1.0-jqp-initial-data-exploration`.
+    │                                        the creator's initials, and a short `-` delimited description, e.g.
+    │                         `              1.0-jqp-initial-data-exploration`.
     │
     ├── output
     │   ├── features                      <- Fitted and serialized features
