@@ -150,12 +150,11 @@ def load_image(image_path):
 @st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=False)
 def inference(model, image, scale): # session
     # Run the inference
-    start = time.time()
-
-    boxes, scores, labels = model.predict_on_batch(np.expand_dims(image, axis=0))
     
-    processing_time = time.time() - start
-    st.error("Processing time for RetinaNet: {0:.3f} seconds!!".format(processing_time))
+    start = time.time()
+    boxes, scores, labels = model.predict_on_batch(np.expand_dims(image, axis=0))
+    st.error("Processing time for RetinaNet: --- {0:.4f} seconds ---".format(time.time() - start))
+
     # correct for image scale
     boxes /= scale
     return boxes, scores, labels
@@ -189,8 +188,8 @@ def draw_detections(draw, boxes, scores, labels):
         
         except TypeError as e:
             st.write("No plate detected")
-
-    return b, draw
+        startX, startY, endX, endY = b[0], b[1], b[2], b[3]
+    return (startX, startY, endX, endY), draw
 
 
 def detector(image_path):
@@ -209,6 +208,14 @@ def detector(image_path):
 
     return drawn, max(scores[0]), draw, b
 
+
+@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=False)
+def cropped_image(image, b):
+    crop = cv2.rectangle(np.array(image), (int(b[0]), int(b[1])), (int(b[2]), int(b[3])), (0, 0, 255), 1)
+    crop = crop[int(b[1]):int(b[3]), int(b[0]):int(b[2])]
+    crop = Image.fromarray(crop)
+
+    return crop
 
 def enhance_crop(crop):
 
@@ -250,13 +257,7 @@ def enhance_crop(crop):
             output_image = cannize_image(crop)
             st.image(output_image, width = crop_size, caption = enhance_type)
             
-@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=False)
-def cropped_image(image, b):
-    crop = cv2.rectangle(np.array(draw), (int(b[0]), int(b[1])), (int(b[2]), int(b[3])), (0, 0, 255), 1)
-    crop = crop[int(b[1]):int(b[3]), int(b[0]):int(b[2])]
-    crop = Image.fromarray(crop)
 
-    return crop
 
 def yolo_detect(frame, net, ln, Idx=0):
     # grab the dimensions of the frame and  initialize the list of
@@ -270,15 +271,15 @@ def yolo_detect(frame, net, ln, Idx=0):
     blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (416, 416),
         swapRB=True, crop=False)
     net.setInput(blob)
-    layerOutputs = net.forward(ln)
 
+    start = time.time()
+    layerOutputs = net.forward(ln)
+    st.error("Processing time for YOLOV3: --- {0:.4f} seconds ---".format(time.time() - start))
     # initialize our lists of detected bounding boxes, centroids, and
     # confidences, respectively
     boxes = []
     centroids = []
     confidences = []
-
-    start = time.time()
 
     # loop over each of the layer outputs
     for output in layerOutputs:
@@ -313,7 +314,7 @@ def yolo_detect(frame, net, ln, Idx=0):
                 centroids.append((centerX, centerY))
                 confidences.append(float(confidence))
 
-    print("Processing time for YOLOV3: --- %s seconds ---" % (time.time() - start))
+    
     # apply non-maxima suppression to suppress weak, overlapping
     # bounding boxes
     idxs = cv2.dnn.NMSBoxes(boxes, confidences, MIN_CONF, NMS_THRESH)
@@ -554,10 +555,7 @@ if choice == "YoloV3 Detection and OCR":
         ln = net.getLayerNames()
         ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
         
-        start = time.time()
         results = yolo_detect(frame, net, ln, Idx=LABELS.index("number_plate"))
-        processing_time = time.time() - start
-        st.error("Processing time for YOLOV3: {0:.3f} seconds!!".format(processing_time))
 
         if show_prob:
             # Show detection results in dataframe
@@ -579,11 +577,14 @@ if choice == "YoloV3 Detection and OCR":
             # cv2.circle(frame, (cX, cY), 5, (0, 255, 0), 1)
 
         # Show result
-        frame = cv2.resize(np.asarray(frame), (w, h))
-        streamlit_output_image(frame, "YoloV3 Output")
+        image = cv2.resize(np.asarray(frame), (w, h)) # resizing image as yolov3 gives 416*416 as output
+        streamlit_output_image(image, "YoloV3 Output")
 
-        enhance_crop(Image.fromarray(frame))
-        streamlit_OCR(frame)
+        crop = cropped_image(frame, (startX, startY, endX, endY))
+        # crop = cv2.resize(np.asarray(crop), (w, h))
+
+        enhance_crop(np.array(crop))
+        streamlit_OCR(crop)
 
 elif choice == "About":
     about()

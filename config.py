@@ -6,13 +6,13 @@ import numpy as np
 # Docker Path
 DIR_PATH = ''
 
-model = 'cfg/yolov3-custom_last.weights'
+model = 'output/models/inference/yolov3-custom_last.weights'
 model_config = 'cfg/yolov3-custom.cfg'
 labels = 'cfg/obj.names'
 # input_videos = 'videos/'
 # output_video = 'output/output_video.mp4'
 
-MODEL_PATH = DIR_PATH + model
+MODEL_PATH = model
 CONFIG_PATH = DIR_PATH + model_config
 LABEL_PATH = DIR_PATH + labels
 # OUTPUT_PATH = DIR_PATH + output_video
