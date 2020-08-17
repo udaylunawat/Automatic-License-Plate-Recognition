@@ -1,7 +1,7 @@
 """This is an Object detection and Optical Character Recognition(OCR) app that enables a user to
 
-- Select or upload an image (in the side bar ⬅️).
-- Get a annotated and cropped license plate image (in the main area ⬇️)
+- Select or upload an image.
+- Get a annotated and cropped license plate image.
 - Play around with Image enhance options (OpenCV).
 - Get OCR Prediction using various options.
 
@@ -23,7 +23,7 @@ from PIL import Image,ImageEnhance
 import random
 import pandas as pd
 # Machine Learning frameworks
-# from keras import backend as K
+from tensorflow.keras import backend as K
 from keras_retinanet import models
 from keras_retinanet.utils.image import preprocess_image, resize_image
 
@@ -83,31 +83,48 @@ def OCR(crop_image):
 def streamlit_OCR(output_image):
     st.text("""""")
     st.write("## 🎅 Bonus:- Optical Character Recognition (OCR)")
-    st.warning("Note: Here, OCR is performed on the enhanced cropped images.")
     st.text("""""")
-    OCR_type = st.sidebar.radio("OCR Mode",["Google's Tesseract OCR","easy_OCR","Secret Combo All-out Attack!!"])
-    if st.button('Recognize Characters !!'):
-        st.text("""""")
+    
+    OCR_type = st.sidebar.radio("OCR Mode",["easy_OCR","Google's Tesseract OCR","Secret Combo All-out Attack!!"])
+    st.warning("Note: OCR is performed on the enhanced cropped images.")
 
+    if OCR_type == "Google's Tesseract OCR":
+        st.error("Researching Google's Tesseract OCR is a work in progress 🚧\
+                \nThe results might be unreliable.")
+    st.text("""""")
+    placeholder = st.empty()
+    note = st.empty()
+    st.text("""""")
+    if st.button('Recognize Characters !!'):
+        
         if OCR_type == "Google's Tesseract OCR":
-            try:
-                tessy_ocr = OCR(output_image)
-                st.success("Google's Tesseract OCR: " + tessy_ocr)
-            except:
-                st.error("Google's Tesseract OCR Failed! :sob:")
+            # try:
+            tessy_ocr = OCR(output_image)
+            
+            if len(tessy_ocr) == 0:
+                placeholder.error("Google's Tesseract OCR Failed! :sob:")
+            else:
+                placeholder.success("Google's Tesseract OCR: " + tessy_ocr)
+                st.text("""""")
 
 
         elif OCR_type == "easy_OCR":	
             try:
                 easy_ocr = e_OCR(output_image)
-                st.success("easy OCR: " + easy_ocr)
+                
+                st.text("""""")
+                placeholder.success("easy OCR: " + easy_ocr)
                 st.balloons()
+            
+            except ModuleNotFoundError:
+                placeholder.error("EasyOCR not installed")
             except:
-                st.write("Easy OCR Failed or not installed! :sob:")
+                placeholder.error("Easy OCR Failed! :sob:")
 
         elif OCR_type == "Secret Combo All-out Attack!!":
             st.text("""""")
             try_all_OCR(output_image)
+    
 
 def cannize_image(our_image):
     new_img = np.array(our_image.convert('RGB'))
@@ -185,11 +202,11 @@ def draw_detections(draw, boxes, scores, labels):
 
             cv2.putText(draw, caption, (b[0], b[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
             cv2.putText(draw, caption, (b[0], b[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
-        
+            # startX, startY, endX, endY = b[0], b[1], b[2], b[3]
         except TypeError as e:
-            st.write("No plate detected")
-        startX, startY, endX, endY = b[0], b[1], b[2], b[3]
-    return (startX, startY, endX, endY), draw
+            st.error("No plate detected")
+        
+    return (b[0], b[1], b[2], b[3]), draw
 
 
 def detector(image_path):
@@ -353,11 +370,11 @@ def streamlit_output_image(image, caption):
 
 #============================ About ==========================
 def about():
-    st.header("Deployed this Streamlit app with Docker on GCP (Google Cloud Platform) ")
-    st.write("""
-    ## \u26C5 Behind The Scene
+    st.success("Deployed this Streamlit app with Docker on GCP (Google Cloud Platform) ")
+    st.warning("""
+    ## \u26C5 Behind The Scenes
         """)
-    st.write("""
+    st.success("""
     To see how it works, please click the button below!
         """)
     st.text("""""")
@@ -367,10 +384,84 @@ def about():
         try:
             webbrowser.open(github_link)
         except:
-            st.write("""
+            st.error("""
                 ⭕ Something Went Wrong!!! Please Try Again Later!!!
                 """)
-    st.markdown("Built with Streamlit by [Uday Lunawat](https://github.com/udaylunawat)")
+    st.info("Built with Streamlit by [Uday Lunawat 😎](https://github.com/udaylunawat)")
+
+def about_yolo():
+    yolo_dir = 'banners/yolo/'
+    yolo_banner = random.choice(listdir(yolo_dir))
+    st.sidebar.markdown("\n")
+    st.sidebar.image(yolo_dir+yolo_banner, use_column_width=True)
+    
+    st.sidebar.info(
+        "**YOLO (“You Only Look Once”)** is an effective real-time object recognition algorithm, \
+        first described in the seminal 2015 [**paper**](https://arxiv.org/abs/1506.02640) by Joseph Redmon et al.\
+        It's a network that uses **Deep Learning (DL)** algorithms for **object detection**. \
+        \n\n[**YOLO**](https://missinglink.ai/guides/computer-vision/yolo-deep-learning-dont-think-twice/) performs object detection \
+        by classifying certain objects within the image and **determining where they are located** on it.\
+        \n\nFor example, if you input an image of a herd of sheep into a YOLO network, it will generate an output of a vector of bounding boxes\
+            for each individual sheep and classify it as such. Yolo is based on algorithms based on regression━they **scan the whole image** and make predictions to **localize**, \
+        identify and classify objects within the image. \
+        \n\nAlgorithms in this group are faster and can be used for **real-time** object detection.\
+        **YOLO V3** is an **improvement** over previous YOLO detection networks. \
+        Compared to prior versions, it features **multi-scale detection**, stronger feature extractor network, and some changes in the loss function.\
+        As a result, this network can now **detect many more targets from big to small**. \
+        And, of course, just like other **single-shot detectors**, \
+        YOLO V3 also runs **quite fast** and makes **real-time inference** possible on **GPU** devices.")
+
+def about_retinanet():
+    od_dir = 'banners/Object detection/'
+    od_banner = random.choice(listdir(od_dir))
+    st.sidebar.markdown("\n")
+    st.sidebar.image(od_dir+od_banner, use_column_width=True)
+
+    st.sidebar.info(
+        "[RetinaNet](https://arxiv.org/abs/1708.02002) is **one of the best one-stage object detection models** that has proven to work well with dense and small scale objects. \
+        For this reason, it has become a **popular** object detection model to be used with aerial and satellite imagery. \
+        \n\n[RetinaNet architecture](https://www.mantralabsglobal.com/blog/better-dense-shape-detection-in-live-imagery-with-retinanet/) was published by **Facebook AI Research (FAIR)** and uses Feature Pyramid Network (FPN) with ResNet. \
+        This architecture demonstrates **higher accuracy** in situations where *speed is not really important*. \
+        RetinaNet is built on top of FPN using ResNet.")
+
+def model_select():
+    crop, image = None, None
+    st.write("""""")
+    st.write("## Upload your own image")
+    samplefiles = sorted([sample for sample in listdir('data/sample_images')])
+    radio_list = ['Choose existing', 'Upload']
+
+    query_params = st.experimental_get_query_params()
+    # Query parameters are returned as a list to support multiselect.
+    # Get the second item (upload) in the list if the query parameter exists.
+    # Setting default page as Upload page, checkout the url too. The page state can be shared now!
+    default = int(query_params['activity'][0]) if 'activity' in query_params else 1
+
+    activity = st.radio("Choose existing sample or try your own:",radio_list,index=default)
+    if activity:
+        st.experimental_set_query_params(activity=radio_list.index(activity))
+        if activity == 'Choose existing':
+            imageselect = st.selectbox("Pick from existing samples", (samplefiles))
+            image = Image.open('data/sample_images/'+imageselect)
+            IMAGE_PATH = 'data/sample_images/'+imageselect
+            image = Image.open('data/sample_images/'+imageselect)
+            img_file_buffer = None
+
+        else:
+            # You can specify more file types below if you want
+            img_file_buffer = st.file_uploader("Upload image", type=['jpeg', 'png', 'jpg', 'webp'], multiple_files = True)
+            st.text("""""")
+            IMAGE_PATH = img_file_buffer
+            try:
+                image = Image.open(img_file_buffer)
+            except:
+                pass
+
+            if image == None:
+                st.success("Upload Image!")
+            imageselect = None
+
+    return image, imageselect
 
 #======================== Time To See The Magic ===========================
 
@@ -379,77 +470,61 @@ crop, image = None, None
 img_size, crop_size = 600, 400
 
 st.set_option('deprecation.showfileUploaderEncoding', False)
-st.markdown("<h1 style='text-align: center; color: black;'>Indian ALPR System using Deep Learning 👁</h1>", unsafe_allow_html=True)
-st.info(__doc__)
-st.write("## How does it work?")
-st.write("Add an image of a car and a [deep learning](http://wiki.fast.ai/index.php/Lesson_1_Notes) model will look at it and find the **license plate** like the example below:")
-st.image(Image.open("output/sample_output.png"),
-        caption="Example of a model being run on a car.",
-        use_column_width=True)
-
-st.write("""""")
-st.write("## Upload your own image")
-st.markdown("👈 Please open sidebar to choose an existing image or upload your own image.")
 
 
-activities = ["RetinaNet Detection and OCR", "YoloV3 Detection and OCR", "About"]
-choice = st.sidebar.selectbox("Select Task", activities)
 
 
-samplefiles = sorted([sample for sample in listdir('data/sample_images')])
-radio_list = ['Choose existing', 'Upload']
 
-query_params = st.experimental_get_query_params()
-# Query parameters are returned as a list to support multiselect.
-# Get the second item (upload) in the list if the query parameter exists.
-# Setting default page as Upload page, checkout the url too. The page state can be shared now!
-default = int(query_params['activity'][0]) if 'activity' in query_params else 1
+activities = ["Home", "RetinaNet Detection", "YoloV3 Detection", "About"]
+choice = st.sidebar.radio("Go to", activities)
 
-activity = st.radio("Choose existing sample or try your own:",radio_list,index=default)
-if activity:
-    st.experimental_set_query_params(activity=radio_list.index(activity))
-    if activity == 'Choose existing':
-        imageselect = st.selectbox("Pick from existing samples", (samplefiles))
-        image = Image.open('data/sample_images/'+imageselect)
-        IMAGE_PATH = 'data/sample_images/'+imageselect
-        image = Image.open('data/sample_images/'+imageselect)
-        img_file_buffer = None
 
-    else:
-        # You can specify more file types below if you want
-        img_file_buffer = st.file_uploader("Upload image", type=['jpeg', 'png', 'jpg', 'webp'], multiple_files = True)
-        st.text("""""")
-        IMAGE_PATH = img_file_buffer
-        try:
-            image = Image.open(img_file_buffer)
-        except:
-            pass
 
-        if image == None:
-            st.success("Upload Image!")
-        imageselect = None
 
+if choice == "Home":
+    st.markdown("<h1 style='text-align: center; color: black;'>Indian ALPR System using Deep Learning 👁</h1>", unsafe_allow_html=True)
+    st.sidebar.info(__doc__)
+    st.write("## How does it work?")
+    st.write("Add an image of a car and a [deep learning](http://wiki.fast.ai/index.php/Lesson_1_Notes) model will look at it and find the **license plate** like the example below:")
+    st.image(Image.open("output/sample_output.png"),
+            caption="Example of a model being run on a car.",
+            use_column_width=True)
+
+    st.text("""""")
+    st.write("## How is this made?")
+
+    st.text("""""")
+    banners = 'banners/'
+    files = [banners+f for f in os.listdir(banners) if os.path.isfile(os.path.join(banners, f))]
+    st.image(random.choice(files),use_column_width=True)
+
+    st.sidebar.info("- The learning (detection) happens  \
+                    with a fine-tuned [**Retinanet**](https://arxiv.org/abs/1708.02002) or a [**YoloV3**](https://pjreddie.com/darknet/yolo/) \
+                    model ([**Google's Tensorflow 2**](https://www.tensorflow.org/)), \
+                    \n- This front end (what you're reading) is built with [**Streamlit**](https://www.streamlit.io/) \
+                    \n- It's all hosted on the cloud using [**Google Cloud Platform's App Engine**](https://cloud.google.com/appengine/).")
+    # st.video("https://youtu.be/C_lIenSJb3c")
+    #  and a [YouTube playlist](https://www.youtube.com/playlist?list=PL6vjgQ2-qJFeMrZ0sBjmnUBZNX9xaqKuM) detailing more below.")
+    # or OpenCV Haar cascade
+
+
+    st.write("""""")
+    st.sidebar.warning("#### Checkout the Source code on [GitHub](https://github.com/udaylunawat/Automatic-License-Plate-Recognition)")
+
+K.clear_session()
 st.text("""""")
-
 model = load_detector_model()
-if choice == "RetinaNet Detection and OCR":
 
+if choice == "RetinaNet Detection":
+    image, imageselect = model_select()
     if image is None:
-        od_dir = 'banners/Object detection/'
-        od_banner = random.choice(listdir(od_dir))
-        st.sidebar.markdown("\n")
-        st.sidebar.image(od_dir+od_banner, use_column_width=True)
-
-        st.sidebar.markdown(
-            "[RetinaNet](https://arxiv.org/abs/1708.02002) is **one of the best one-stage object detection models** that has proven to work well with dense and small scale objects. \
-            For this reason, it has become a **popular** object detection model to be used with aerial and satellite imagery. \
-            \n\n[RetinaNet architecture](https://www.mantralabsglobal.com/blog/better-dense-shape-detection-in-live-imagery-with-retinanet/) was published by **Facebook AI Research (FAIR)** and uses Feature Pyramid Network (FPN) with ResNet. \
-            This architecture demonstrates **higher accuracy** in situations where *speed is not really important*. \
-            RetinaNet is built on top of FPN using ResNet.")
+        about_retinanet()
 
     if image is not None:
+        if st.sidebar.checkbox("View Documentation"):
+            about_retinanet()
 
-        st.sidebar.markdown("## Preview 👀 Of Selected Image!")
+        st.sidebar.markdown("## Preview Of Selected Image! 👀")
         streamlit_preview_image(image)
 
         metric = st.sidebar.radio("metric ",["Confidence cutoff"])
@@ -475,7 +550,7 @@ if choice == "RetinaNet Detection and OCR":
         except TypeError:
             st.error('''
             Model is not confident enough!
-            \nTry lowering the confidence cutoff score from sidebar OR Use any other image.
+            \nTry lowering the confidence cutoff score from sidebar.
             ''')
 
 
@@ -483,32 +558,16 @@ if choice == "RetinaNet Detection and OCR":
         streamlit_OCR(crop)
 
 
-if choice == "YoloV3 Detection and OCR":
-
+if choice == "YoloV3 Detection":
+    image, imageselect = model_select()
     if image is None:
-        yolo_dir = 'banners/yolo/'
-        yolo_banner = random.choice(listdir(yolo_dir))
-        st.sidebar.markdown("\n")
-        st.sidebar.image(yolo_dir+yolo_banner, use_column_width=True)
-        
-        st.sidebar.markdown(
-            "**YOLO (“You Only Look Once”)** is an effective real-time object recognition algorithm, \
-            first described in the seminal 2015 [**paper**](https://arxiv.org/abs/1506.02640) by Joseph Redmon et al.\
-            It's a network that uses **Deep Learning (DL)** algorithms for **object detection**. \
-            \n\n[**YOLO**](https://missinglink.ai/guides/computer-vision/yolo-deep-learning-dont-think-twice/) performs object detection \
-            by classifying certain objects within the image and **determining where they are located** on it.\
-            \n\nFor example, if you input an image of a herd of sheep into a YOLO network, it will generate an output of a vector of bounding boxes\
-             for each individual sheep and classify it as such. Yolo is based on algorithms based on regression━they **scan the whole image** and make predictions to **localize**, \
-            identify and classify objects within the image. \
-            \n\nAlgorithms in this group are faster and can be used for **real-time** object detection.\
-            **YOLO V3** is an **improvement** over previous YOLO detection networks. \
-            Compared to prior versions, it features **multi-scale detection**, stronger feature extractor network, and some changes in the loss function.\
-            As a result, this network can now **detect many more targets from big to small**. \
-            And, of course, just like other **single-shot detectors**, \
-            YOLO V3 also runs **quite fast** and makes **real-time inference** possible on **GPU** devices.")
+        about_yolo()
     
     if image is not None:
-        st.write("## Preview 👀 Of Selected Image!")
+        if st.sidebar.checkbox("View Documentation"):
+            about_yolo()
+        
+        st.sidebar.markdown("## Preview Of Selected Image! 👀")
         streamlit_preview_image(image)
 
         metric = st.sidebar.radio("metric ",["Confidence cutoff"])
@@ -580,35 +639,18 @@ if choice == "YoloV3 Detection and OCR":
         image = cv2.resize(np.asarray(frame), (w, h)) # resizing image as yolov3 gives 416*416 as output
         streamlit_output_image(image, "YoloV3 Output")
 
-        crop = cropped_image(frame, (startX, startY, endX, endY))
-        # crop = cv2.resize(np.asarray(crop), (w, h))
-
+        try:
+            crop = cropped_image(frame, (startX, startY, endX, endY))
+            # crop = cv2.resize(np.asarray(crop), (w, h))
+        except TypeError:
+            st.error('''
+            Model is not confident enough!
+            \nTry lowering the confidence cutoff score from sidebar.
+            ''')
         enhance_crop(np.array(crop))
         streamlit_OCR(crop)
 
 elif choice == "About":
     about()
 
-st.text("""""")
-st.write("## How is this made?")
 
-st.text("""""")
-banners = 'banners/'
-files = [banners+f for f in os.listdir(banners) if os.path.isfile(os.path.join(banners, f))]
-st.image(random.choice(files),use_column_width=True)
-
-st.markdown("- The machine learning happens  \
-    \n > - with a fine-tuned [**Retinanet**](https://arxiv.org/abs/1708.02002) or [**YoloV3**](https://pjreddie.com/darknet/yolo/) model ([**Google's Tensorflow 2**](https://www.tensorflow.org/)), \
-    \n- This front end (what you're reading) is built with [**Streamlit**](https://www.streamlit.io/) \
-    \n- It's all hosted on the cloud using [**Google Cloud Platform's App Engine**](https://cloud.google.com/appengine/).")
-# st.video("https://youtu.be/C_lIenSJb3c")
-#  and a [YouTube playlist](https://www.youtube.com/playlist?list=PL6vjgQ2-qJFeMrZ0sBjmnUBZNX9xaqKuM) detailing more below.")
-# or OpenCV Haar cascade
-
-
-st.write("""""")
-st.warning("#### Checkout the Source code on [GitHub](https://github.com/udaylunawat/Automatic-License-Plate-Recognition)")
-
-
-st.text("""""")
-st.write("Go to the About section from the sidebar to learn more about this project!")
