@@ -11,4 +11,4 @@ WORKDIR /app
 
 EXPOSE 8080
 
-CMD streamlit run  app.py  --server.enableCORS false
+CMD streamlit run app.py --server.port 8080 --server.enableXsrfProtection=false --server.enableCORS=false
