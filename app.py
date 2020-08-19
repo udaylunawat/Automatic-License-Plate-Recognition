@@ -24,7 +24,7 @@ import numpy as np
 import time
 
 import pytesseract
-import easyocr
+# import easyocr
 
 import random
 import pandas as pd
@@ -91,14 +91,12 @@ def streamlit_OCR(output_image):
     OCR_type = st.sidebar.radio("OCR Mode",["easy_OCR","Google's Tesseract OCR","Secret Combo All-out Attack!!"])
     st.warning("Note: OCR is performed on the enhanced cropped images.")
 
-    if OCR_type == "Google's Tesseract OCR":
-        st.error("Researching Google's Tesseract OCR is a work in progress 🚧\
-                \nThe results might be unreliable.")
 
+    button = st.empty()
     placeholder = st.empty()
     note = st.empty()
 
-    if st.button('Recognize Characters !!'):
+    if button.button('Recognize Characters !!'):
         
         if OCR_type == "Google's Tesseract OCR":
             # try:
@@ -109,7 +107,8 @@ def streamlit_OCR(output_image):
 
             else:
                 placeholder.success("Google's Tesseract OCR: " + tessy_ocr)
-
+                st.error("Researching Google's Tesseract OCR is a work in progress 🚧\
+            \nThe results might be unreliable.")
 
         elif OCR_type == "easy_OCR":
 
@@ -248,46 +247,45 @@ def cropped_image(image, b):
 
     return crop
     
-@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=True)
+# @st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=True)
 def enhance_crop(crop):
 
-    if crop is not None:
-        st.write("## Enhance License Plate")
+    st.write("## Enhance License Plate")
 
-        enhance_type = st.sidebar.radio("Enhance Type",["Original","Gray-Scale","Contrast","Brightness","Blurring","Cannize"])
+    enhance_type = st.sidebar.radio("Enhance Type",["Original","Gray-Scale","Contrast","Brightness","Blurring","Cannize"])
 
 
-        if enhance_type == 'Original':
-            output_image = crop
-            st.image(output_image, width=crop_size, caption = enhance_type)
+    if enhance_type == 'Original':
+        output_image = crop
+        st.image(output_image, width=crop_size, caption = enhance_type)
 
-        elif enhance_type == 'Gray-Scale':
-            temp = np.array(crop.convert('RGB'))
-            output_image = cv2.cvtColor(temp,cv2.COLOR_BGR2GRAY)
-            st.image(output_image, width = crop_size, caption = enhance_type)
+    elif enhance_type == 'Gray-Scale':
+        temp = np.array(crop.convert('RGB'))
+        output_image = cv2.cvtColor(temp,cv2.COLOR_BGR2GRAY)
+        st.image(output_image, width = crop_size, caption = enhance_type)
 
-        elif enhance_type == 'Contrast':
-            c_rate = st.sidebar.slider("Contrast",0.2,8.0,(3.5))
-            enhancer = ImageEnhance.Contrast(crop)
-            output_image = enhancer.enhance(c_rate)
-            st.image(output_image,width = crop_size, caption = enhance_type)
+    elif enhance_type == 'Contrast':
+        c_rate = st.sidebar.slider("Contrast",0.2,8.0,(3.5))
+        enhancer = ImageEnhance.Contrast(crop)
+        output_image = enhancer.enhance(c_rate)
+        st.image(output_image,width = crop_size, caption = enhance_type)
 
-        elif enhance_type == 'Brightness':
-            c_rate = st.sidebar.slider("Brightness",0.2,8.0,(1.5))
-            enhancer = ImageEnhance.Brightness(crop)
-            output_image = enhancer.enhance(c_rate)
-            st.image(output_image, width = crop_size, caption = enhance_type)
+    elif enhance_type == 'Brightness':
+        c_rate = st.sidebar.slider("Brightness",0.2,8.0,(1.5))
+        enhancer = ImageEnhance.Brightness(crop)
+        output_image = enhancer.enhance(c_rate)
+        st.image(output_image, width = crop_size, caption = enhance_type)
 
-        elif enhance_type == 'Blurring':
-            temp = np.array(crop.convert('RGB'))
-            blur_rate = st.sidebar.slider("Blur",0.2,8.0,(1.5))
-            img = cv2.cvtColor(temp,1)
-            output_image = cv2.GaussianBlur(img,(11,11),blur_rate)
-            st.image(output_image, width = crop_size, caption = enhance_type)
-        
-        elif enhance_type == 'Cannize':
-            output_image = cannize_image(crop)
-            st.image(output_image, width = crop_size, caption = enhance_type)
+    elif enhance_type == 'Blurring':
+        temp = np.array(crop.convert('RGB'))
+        blur_rate = st.sidebar.slider("Blur",0.2,8.0,(1.5))
+        img = cv2.cvtColor(temp,1)
+        output_image = cv2.GaussianBlur(img,(11,11),blur_rate)
+        st.image(output_image, width = crop_size, caption = enhance_type)
+    
+    elif enhance_type == 'Cannize':
+        output_image = cannize_image(crop)
+        st.image(output_image, width = crop_size, caption = enhance_type)
 
 def yolo_detect(frame, net, ln, Idx=0):
     # grab the dimensions of the frame and  initialize the list of
@@ -384,7 +382,7 @@ def streamlit_output_image(image, caption):
 
 #============================ About ==========================
 def about():
-    st.success("Deployed this Streamlit app with Docker on GCP (Google Cloud Platform) ")
+
     st.warning("""
     ## \u26C5 Behind The Scenes
         """)
@@ -469,11 +467,11 @@ def select_image():
 
             IMAGE_PATH = img_file_buffer
             try:
-                image = load_image(img_file_buffer)
+                image = Image.open(IMAGE_PATH)
             except:
                 pass
-
-            if image == None:
+            
+            if image is None:
                 st.success("Upload Image!")
             selected_sample = None
 
@@ -539,7 +537,7 @@ if choice == "RetinaNet Detection":
     
     
     # if st.button("Make a Prediction 🔥"):
-    
+    st.warning("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
     if image:
         try:
 
@@ -552,11 +550,14 @@ if choice == "RetinaNet Detection":
             
             img_list, score_list =  map(list, zip(*crop_list))
             st.write("### Cropped Plates")
-            st.image(img_list, caption=["Cropped Image with model confidence score:"+'{0:.2f}'.format(score) for score in score_list], width = 300)
+            st.image(img_list, caption=["Cropped Image with model confidence score:"+'{0:.2f}'.format(score) for score in score_list], width = crop_size)
 
             # https://dbader.org/blog/python-min-max-and-nested-lists
             max_crop, max_conf = None, None
             [max_crop, max_conf] = max(crop_list, key=lambda x: x[1])
+
+            enhance_crop(max_crop)
+            streamlit_OCR(max_crop)
 
         except TypeError as e:
 
@@ -565,11 +566,6 @@ if choice == "RetinaNet Detection":
                     \nTry lowering the confidence cutoff score from sidebar.
                     ''')
             # st.error("Error log: "+str(e))
-
-        enhance_crop(max_crop)
-        streamlit_OCR(max_crop)
-
-    st.warning("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
 
 
 
@@ -581,7 +577,7 @@ if choice == "YoloV3 Detection":
 
         about_yolo()
     
-
+    st.warning("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
     if image:
 
         if st.sidebar.checkbox("View Documentation"):
@@ -646,31 +642,39 @@ if choice == "YoloV3 Detection":
             (cX, cY) = centroid
 
             # Overlay
-            cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
+            cv2.rectangle(frame, (startX, startY), (endX, endY), (255, 255, 255), 2)
             # cv2.circle(frame, (cX, cY), 5, (0, 255, 0), 1)
 
         # Show result
         image = cv2.resize(np.asarray(frame), (w, h)) # resizing image as yolov3 gives 416*416 as output
-        streamlit_output_image(image, "YoloV3 Output")
+
 
         try:
             crop = cropped_image(frame, (startX, startY, endX, endY))
-            # crop = cv2.resize(np.asarray(crop), (w, h))
-
+            
+            # resizing cropped image
+            crop_w, crop_h = endX - startX, endY - startY # height & width of number plate of 416*416 image
+            width_m, height_m = w/416, h/416 # width and height multiplier
+            w2, h2 = round(crop_w*width_m), round(crop_h*height_m)
+            crop = cv2.resize(np.asarray(crop), (w2, h2))
+            
         except NameError as e:
             st.error('''
             Model is not confident enough!
             \nTry lowering the confidence cutoff score from sidebar.
             ''')
             st.error("Error log: "+str(e))
+        
+        streamlit_output_image(image, "YoloV3 Output")
 
-    enhance_crop(crop)
-    streamlit_OCR(crop)
+        try:
+            crop = Image.fromarray(crop)
+        except:
+            pass
 
-    st.warning("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
-    
-
+        if crop :
+            enhance_crop(crop)
+            streamlit_OCR(crop)
+        
 elif choice == "About":
     about()
-
-
