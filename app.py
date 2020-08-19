@@ -7,9 +7,11 @@
 
 """
 
+# streamlit configurations and options
 import streamlit as st
 from streamlit import caching
 st.beta_set_page_config(page_title="Ex-stream-ly Cool App", page_icon="😎",layout="centered",initial_sidebar_state="expanded")
+st.set_option('deprecation.showfileUploaderEncoding', False)
 
 import os
 from os import listdir
@@ -48,7 +50,7 @@ NMS_THRESH = 0.3
 
 #================================= Functions =================================
 
-@st.cache()
+@st.cache
 def try_all_OCR(crop_image):
     progress_bar = st.progress(0)
     counter = 0
@@ -63,7 +65,6 @@ def try_all_OCR(crop_image):
             except:
                 continue
 
-@st.cache()
 def easy_OCR(crop):
     reader = easyocr.Reader(['en'])
     ocr_output = reader.readtext(np.array(crop))
@@ -72,7 +73,6 @@ def easy_OCR(crop):
         plate_text += text[1]
     return plate_text
 
-@st.cache()
 def OCR(crop_image):
     # psm 6 - single line license
     try:
@@ -82,6 +82,7 @@ def OCR(crop_image):
     except:
         pass
     return text_output
+
 
 def streamlit_OCR(output_image):
 
@@ -138,7 +139,7 @@ def cannize_image(our_image):
     canny = cv2.Canny(img, 100, 150)
     return canny
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=False, show_spinner=False)
+@st.cache(suppress_st_warning=True, allow_output_mutation=False, show_spinner=True)
 def load_detector_model():
     # caching.clear_cache()
     model_path = 'output/models/inference/plate_inference_tf2.h5'
@@ -155,10 +156,6 @@ def load_detector_model():
         print("Model is likely already an inference model")
 
     return model
-
-
-# tb.clear_session()
-# keras.backend.clear_session()
 
 
 def image_preprocessing(image):
@@ -251,7 +248,7 @@ def cropped_image(image, b):
 
     return crop
     
-@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=False)
+@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=True)
 def enhance_crop(crop):
 
     if crop is not None:
@@ -291,7 +288,7 @@ def enhance_crop(crop):
         elif enhance_type == 'Cannize':
             output_image = cannize_image(crop)
             st.image(output_image, width = crop_size, caption = enhance_type)
-            
+
 def yolo_detect(frame, net, ln, Idx=0):
     # grab the dimensions of the frame and  initialize the list of
     # results
@@ -308,7 +305,7 @@ def yolo_detect(frame, net, ln, Idx=0):
     start = time.time()
     layerOutputs = net.forward(ln)
     st.error("Processing time for YOLOV3: --- {0:.4f} seconds ---".format(time.time() - start))
-    print("Processing time for RetinaNet: --- {0:.4f} seconds ---".format(time.time() - start))
+    print("Processing time for YOLOV3: --- {0:.4f} seconds ---".format(time.time() - start))
     # initialize our lists of detected bounding boxes, centroids, and
     # confidences, respectively
     boxes = []
@@ -488,31 +485,17 @@ def select_image():
 crop, image = None, None
 img_size, crop_size = 600, 400
 
-st.set_option('deprecation.showfileUploaderEncoding', False)
-
-
 activities = ["Home", "RetinaNet Detection", "YoloV3 Detection", "About"]
 choice = st.sidebar.radio("Go to", activities)
 
 
 if choice == "Home":
-
-    # caching.clear_cache()
     
     st.markdown("<h1 style='text-align: center; color: black;'>Indian ALPR System using Deep Learning 👁</h1>", unsafe_allow_html=True)
     st.sidebar.info(__doc__)
     st.write("## How does it work?")
-    st.write("Add an image of a car and a [deep learning](http://wiki.fast.ai/index.php/Lesson_1_Notes) model will look at it and find the **license plate** like the example below:")
-    st.image(Image.open("output/sample_output.png"),
-            caption="Example of a model being run on a car.",
-            use_column_width=True)
-
-    st.write("## How is this made?")
-
-    banners = 'banners/'
-    files = [banners+f for f in os.listdir(banners) if os.path.isfile(os.path.join(banners, f))]
-    st.image(random.choice(files),use_column_width=True)
-
+    st.write("Add an image of a car and a [deep learning](http://wiki.fast.ai/index.php/Lesson_1_Notes) model will look at it\
+         and find the **license plate** like the example below:")
     st.sidebar.info("- The learning (detection) happens  \
                     with a fine-tuned [**Retinanet**](https://arxiv.org/abs/1708.02002) or a [**YoloV3**](https://pjreddie.com/darknet/yolo/) \
                     model ([**Google's Tensorflow 2**](https://www.tensorflow.org/)), \
@@ -524,6 +507,16 @@ if choice == "Home":
     # or OpenCV Haar cascade
 
     st.sidebar.warning("#### Checkout the Source code on [GitHub](https://github.com/udaylunawat/Automatic-License-Plate-Recognition)")
+
+    st.image("output/sample_output.png",
+            caption="Example of a model being run on a car.",
+            use_column_width=True)
+
+    st.write("## How is this made?")
+    banners = 'banners/'
+    files = [banners+f for f in os.listdir(banners) if os.path.isfile(os.path.join(banners, f))]
+    st.image(random.choice(files),use_column_width=True)
+
 
 if choice == "RetinaNet Detection":
     
@@ -565,9 +558,6 @@ if choice == "RetinaNet Detection":
             max_crop, max_conf = None, None
             [max_crop, max_conf] = max(crop_list, key=lambda x: x[1])
 
-            enhance_crop(max_crop)
-            streamlit_OCR(crop)
-
         except TypeError as e:
 
             st.warning('''
@@ -576,6 +566,9 @@ if choice == "RetinaNet Detection":
                     ''')
             # st.error("Error log: "+str(e))
 
+        enhance_crop(max_crop)
+        streamlit_OCR(max_crop)
+
     st.warning("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
 
 
@@ -583,10 +576,14 @@ if choice == "RetinaNet Detection":
 if choice == "YoloV3 Detection":
     
     image, selected_sample, IMAGE_PATH = select_image()
+
     if image is None:
+
         about_yolo()
     
-    if image is not None:
+
+    if image:
+
         if st.sidebar.checkbox("View Documentation"):
             about_yolo()
         
@@ -597,9 +594,6 @@ if choice == "YoloV3 Detection":
 
         # Detections below this confidence will be ignored
         confidence_cutoff = st.sidebar.slider("Cutoff",0.0,1.0,(0.5))
-    
-
-    if image is not None:
 
         # YOLO Detection
         # Preprocess
@@ -622,14 +616,19 @@ if choice == "YoloV3 Detection":
         weightsPath = config.MODEL_PATH
         configPath = config.CONFIG_PATH
 
-        # load our YOLO object detector trained on COCO dataset (80 classes)
-        net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
+        @st.cache(allow_output_mutation=True)
+        def load_network(configpath, weightspath):
 
-        # determine only the *output* layer names that we need from YOLO
-        ln = net.getLayerNames()
-        ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-        
-        results = yolo_detect(frame, net, ln, Idx=LABELS.index("number_plate"))
+            # load our YOLO object detector trained on our dataset (1 class)
+            net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
+
+            # determine only the *output* layer names that we need from YOLO
+            output_layer_names = net.getLayerNames()
+            output_layer_names = [output_layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+            return net, output_layer_names
+
+        net, output_layer_names = load_network(configPath, weightsPath)
+        results = yolo_detect(frame, net, output_layer_names, Idx=LABELS.index("number_plate"))
 
         if show_prob:
             # Show detection results in dataframe
@@ -658,16 +657,17 @@ if choice == "YoloV3 Detection":
             crop = cropped_image(frame, (startX, startY, endX, endY))
             # crop = cv2.resize(np.asarray(crop), (w, h))
 
-            enhance_crop(np.array(crop))
-            streamlit_OCR(crop)
-
         except NameError as e:
             st.error('''
             Model is not confident enough!
             \nTry lowering the confidence cutoff score from sidebar.
             ''')
             st.error("Error log: "+str(e))
-        st.warning("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
+
+    enhance_crop(crop)
+    streamlit_OCR(crop)
+
+    st.warning("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
     
 
 elif choice == "About":
