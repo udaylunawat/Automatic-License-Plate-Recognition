@@ -40,16 +40,10 @@ Python Packages Needed
 Project Organization
 ------------
 
-    ├── .gitignore                        <- GitHub's excellent Python .gitignore customized for this project
-    ├── .dockerignore                     <- Docker ignore
-    ├── app.yaml                          <- contains configuration that is applied to each container started
-    │                                        for that service
-    ├── config.py                         <- Global configuration variables
-    ├── LICENSE                           <- Your project's license.
-    ├── Makefile                          <- Makefile with commands like `make data` or `make train`
-    ├── README.md                         <- The top-level README for developers using this project.
-    ├── tox.ini                           <- tox file with settings for running tox; see tox.readthedocs.io
     ├── banners                           <- Images for skill banner and project banner
+    │
+    ├── cfg                               <- Configuration files
+    │
     ├── data
     │   ├── sample_images                 <- Sample images for inference
     │   ├── 0_raw                         <- The original, immutable data dump.
@@ -72,10 +66,6 @@ Project Organization
     │   └── reports                       <- Generated analyses as HTML, PDF, LaTeX, etc.
     │       └── figures                   <- Generated graphics and figures to be used in reporting
     │
-    ├── requirements.txt                  <- The requirements file for reproducing the analysis environment, e.g.
-    │                                         generated with `pip freeze > requirements.txt`
-    │
-    ├── setup.py                          <- makes project pip installable (pip install -e .) so src can be imported
     ├── src                               <- Source code for use in this project.
     │   ├── __init__.py                   <- Makes src a Python module
     │   │
@@ -95,10 +85,24 @@ Project Organization
     │   │
     │   └── visualization                 <- Scripts to create exploratory and results oriented visualizations
     │       └── visualize.py
-    └── serve                             <- HTTP API for serving predictions using Streamlit
-        ├── Dockerfile                    <- Dockerfile for HTTP API
-        ├── Pipfile                       <- The Pipfile for reproducing the serving environment
-        └── app.py                        <- The entry point of the HTTP API using Streamlit app
+    ├── serve                             <- HTTP API for serving predictions using Streamlit
+    │   ├── Dockerfile                    <- Dockerfile for HTTP API
+    │   ├── Pipfile                       <- The Pipfile for reproducing the serving environment
+    │   └── app.py                        <- The entry point of the HTTP API using Streamlit app
+    │
+    ├── .dockerignore                     <- Docker ignore
+    ├── .gitignore                        <- GitHub's excellent Python .gitignore customized for this project
+    ├── app.yaml                          <- contains configuration that is applied to each container started
+    │                                        for that service
+    ├── config.py                         <- Global configuration variables
+    ├── LICENSE                           <- Your project's license.
+    ├── Makefile                          <- Makefile with commands like `make data` or `make train`
+    ├── README.md                         <- The top-level README for developers using this project.
+    ├── tox.ini                           <- tox file with settings for running tox; see tox.readthedocs.io
+    ├── requirements.txt                  <- The requirements file for reproducing the analysis environment, e.g.
+    │                                        generated with `pip freeze > requirements.txt`
+    └── setup.py                          <- makes project pip installable (pip install -e .) so src can be                                                    imported
+
 
 --------
 
