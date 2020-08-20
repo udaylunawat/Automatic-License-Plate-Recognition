@@ -60,6 +60,7 @@ inference_download:
 	wget -c $(INFERENCE) -O output/models/inference/plate_inference_tf2.h5 -q --show-progress
 
 retinanet_source:
+	rm -rf keras-retinanet
 	git clone https://github.com/udaylunawat/keras-retinanet.git
 	$(PYTHON_INTERPRETER) -m pip install keras-retinanet/.
 	cd keras-retinanet
