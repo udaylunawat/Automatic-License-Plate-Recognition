@@ -400,7 +400,7 @@ def about():
                 """)
     st.info("Built with Streamlit by [Uday Lunawat 😎](https://github.com/udaylunawat)")
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=True)
+# @st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=True)
 def about_yolo():
     yolo_dir = 'banners/yolo/'
     yolo_banner = random.choice(listdir(yolo_dir))
@@ -423,7 +423,7 @@ def about_yolo():
         And, of course, just like other **single-shot detectors**, \
         YOLO V3 also runs **quite fast** and makes **real-time inference** possible on **GPU** devices.")
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=True)
+# @st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=True)
 def about_retinanet():
     od_dir = 'banners/Object detection/'
     od_banner = random.choice(listdir(od_dir))
