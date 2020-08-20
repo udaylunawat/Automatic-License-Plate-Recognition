@@ -178,7 +178,7 @@ def inference(model, image, scale): # session
     
     start = time.time()
     boxes, scores, labels = model.predict_on_batch(np.expand_dims(image, axis=0))
-    # st.error("Processing time for RetinaNet: --- {0:.4f} seconds ---".format(time.time() - start))
+    st.error("Processing time for RetinaNet: --- {0:.4f} seconds ---".format(time.time() - start))
     print("Processing time for RetinaNet: --- {0:.4f} seconds ---".format(time.time() - start))
 
     # correct for image scale
