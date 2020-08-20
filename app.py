@@ -50,7 +50,7 @@ NMS_THRESH = 0.3
 
 #================================= Functions =================================
 
-@st.cache
+@st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=True)
 def try_all_OCR(crop_image):
     progress_bar = st.progress(0)
     counter = 0
@@ -88,7 +88,6 @@ def streamlit_OCR(output_image):
 
     st.write("## 🎅 Bonus:- Optical Character Recognition (OCR)")
     
-    OCR_type = st.sidebar.radio("OCR Mode",["easy_OCR","Google's Tesseract OCR","Secret Combo All-out Attack!!"])
     st.warning("Note: OCR is performed on the enhanced cropped images.")
 
 
@@ -404,7 +403,6 @@ def about():
 def about_yolo():
     yolo_dir = 'banners/yolo/'
     yolo_banner = random.choice(listdir(yolo_dir))
-    st.sidebar.markdown("\n")
     st.sidebar.image(yolo_dir+yolo_banner, use_column_width=True)
     
     st.sidebar.info(
@@ -427,7 +425,6 @@ def about_yolo():
 def about_retinanet():
     od_dir = 'banners/Object detection/'
     od_banner = random.choice(listdir(od_dir))
-    st.sidebar.markdown("\n")
     st.sidebar.image(od_dir+od_banner, use_column_width=True)
 
     st.sidebar.info(
@@ -452,6 +449,7 @@ def select_image():
     default = int(query_params['activity'][0]) if 'activity' in query_params else 1
 
     activity = st.radio("Choose existing sample or try your own:",radio_list,index=default)
+    
     if activity:
         st.experimental_set_query_params(activity=radio_list.index(activity))
         if activity == 'Choose existing':
@@ -479,13 +477,11 @@ def select_image():
 
 #======================== Time To See The Magic ===========================
 
-
 crop, image = None, None
 img_size, crop_size = 600, 400
 
 activities = ["Home", "RetinaNet Detection", "YoloV3 Detection", "About"]
 choice = st.sidebar.radio("Go to", activities)
-
 
 if choice == "Home":
     
@@ -516,17 +512,17 @@ if choice == "Home":
     st.image(random.choice(files),use_column_width=True)
 
 
-if choice == "RetinaNet Detection":
-    
+elif choice == "About":
+    about()
+
+elif choice == "RetinaNet Detection" or "YoloV3 Detection":
+
     image, selected_sample, IMAGE_PATH = select_image()
-    if image is None:
-        about_retinanet()
 
-    if image is not None:
+    st.warning("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
+
+    if image:
         
-        if st.sidebar.checkbox("View Documentation"):
-            about_retinanet()
-
         st.sidebar.markdown("## Preview Of Selected Image! 👀")
         streamlit_preview_image(image)
 
@@ -534,147 +530,139 @@ if choice == "RetinaNet Detection":
 
         # Detections below this confidence will be ignored
         confidence_cutoff = st.sidebar.slider("Cutoff",0.0,1.0,(0.5))
+        
+        OCR_type = st.sidebar.radio("OCR Mode",["easy_OCR","Google's Tesseract OCR","Secret Combo All-out Attack!!"])
+        
+        docs = st.sidebar.empty()
+        if docs.checkbox("View Documentation"):
+            if choice == "RetinaNet Detection":
+                about_retinanet()
+            else:
+                about_yolo()
+
+    if image is None :
+
+        if choice == "RetinaNet Detection":
+            about_retinanet()
+        else:
+            about_yolo()
     
-    
-    # if st.button("Make a Prediction 🔥"):
-    st.warning("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
-    if image:
-        try:
+    if choice == "RetinaNet Detection":
 
-            model = load_detector_model()
-            with st.spinner('Calculating...'):
-                annotated_image, score, crop_list = detector(IMAGE_PATH, model)
+        if image:
 
-            st.write("## License Plate Detection!")
-            streamlit_output_image(annotated_image, 'Annotated Image with model confidence score: {0:.2f}'.format(score))
-            
-            img_list, score_list =  map(list, zip(*crop_list))
-            st.write("### Cropped Plates")
-            st.image(img_list, caption=["Cropped Image with model confidence score:"+'{0:.2f}'.format(score) for score in score_list], width = crop_size)
+            if st.checkbox("Make a Prediction 🔥"):
+                try:
 
-            # https://dbader.org/blog/python-min-max-and-nested-lists
-            max_crop, max_conf = None, None
-            [max_crop, max_conf] = max(crop_list, key=lambda x: x[1])
+                    model = load_detector_model()
+                    with st.spinner('Calculating...'):
+                        annotated_image, score, crop_list = detector(IMAGE_PATH, model)
 
-            enhance_crop(max_crop)
-            streamlit_OCR(max_crop)
+                    st.write("## License Plate Detection!")
+                    streamlit_output_image(annotated_image, 'Annotated Image with model confidence score: {0:.2f}'.format(score))
+                    
+                    img_list, score_list =  map(list, zip(*crop_list))
+                    st.write("### Cropped Plates")
+                    st.image(img_list, caption=["Cropped Image with model confidence score:"+'{0:.2f}'.format(score) for score in score_list], width = crop_size)
 
-        except TypeError as e:
+                    # https://dbader.org/blog/python-min-max-and-nested-lists
+                    max_crop, max_conf = None, None
+                    [max_crop, max_conf] = max(crop_list, key=lambda x: x[1])
 
-            st.warning('''
+                    enhance_crop(max_crop)
+                    streamlit_OCR(max_crop)
+
+                except TypeError as e:
+
+                    st.warning('''
+                            Model is not confident enough!
+                            \nTry lowering the confidence cutoff score from sidebar.
+                            ''')
+                    # st.error("Error log: "+str(e))
+
+    if choice == "YoloV3 Detection":
+
+        if image:
+
+            if st.checkbox("Make a Prediction 🔥"):
+
+                # YOLO Detection
+                # Preprocess
+                frame = cv2.resize(np.asarray(image), (416, 416))
+
+                # Get parameter
+                MIN_CONF = confidence_cutoff
+                show_prob = st.sidebar.checkbox('Show Probability')
+                w, h = image.size
+
+                # Initialization
+                # load the COCO class labels our YOLO model was trained on
+                labelsPath = config.LABEL_PATH
+                LABELS = open(labelsPath).read().strip().split("\n")
+
+                # derive the paths to the YOLO weights and model configuration
+                weightsPath = config.MODEL_PATH
+                configPath = config.CONFIG_PATH
+
+                @st.cache(allow_output_mutation=True)
+                def load_network(configpath, weightspath):
+
+                    # load our YOLO object detector trained on our dataset (1 class)
+                    net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
+
+                    # determine only the *output* layer names that we need from YOLO
+                    output_layer_names = net.getLayerNames()
+                    output_layer_names = [output_layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+                    return net, output_layer_names
+
+                net, output_layer_names = load_network(configPath, weightsPath)
+                results = yolo_detect(frame, net, output_layer_names, Idx=LABELS.index("number_plate"))
+
+                if show_prob:
+                    # Show detection results in dataframe
+                    probs = [result[0] for result in results]
+                    df = pd.DataFrame(dict(ID=list(range(len(results))), Prob=probs))
+                    st.dataframe(df)
+
+                    # Simple plot
+                    st.line_chart(df['Prob'])
+
+                # Loop over the results
+                for (i, (prob, bbox, centroid)) in enumerate(results):
+                    # Extract the bounding box and centroid coordinates
+                    (startX, startY, endX, endY) = bbox
+                    (cX, cY) = centroid
+
+                    # Overlay
+                    cv2.rectangle(frame, (startX, startY), (endX, endY), (255, 255, 255), 2)
+                    # cv2.circle(frame, (cX, cY), 5, (0, 255, 0), 1)
+
+                # Show result
+                image = cv2.resize(np.asarray(frame), (w, h)) # resizing image as yolov3 gives 416*416 as output
+
+                try:
+                    crop = cropped_image(frame, (startX, startY, endX, endY))
+                    
+                    # resizing cropped image
+                    crop_w, crop_h = endX - startX, endY - startY # height & width of number plate of 416*416 image
+                    width_m, height_m = w/416, h/416 # width and height multiplier
+                    w2, h2 = round(crop_w*width_m), round(crop_h*height_m)
+                    crop = cv2.resize(np.asarray(crop), (w2, h2))
+                    
+                except NameError as e:
+                    st.error('''
                     Model is not confident enough!
                     \nTry lowering the confidence cutoff score from sidebar.
                     ''')
-            # st.error("Error log: "+str(e))
+                    st.error("Error log: "+str(e))
+                
+                streamlit_output_image(image, "YoloV3 Output")
 
+                try:
+                    crop = Image.fromarray(crop)
+                except:
+                    pass
 
-
-if choice == "YoloV3 Detection":
-    
-    image, selected_sample, IMAGE_PATH = select_image()
-
-    if image is None:
-
-        about_yolo()
-    
-    st.warning("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
-    if image:
-
-        if st.sidebar.checkbox("View Documentation"):
-            about_yolo()
-        
-        st.sidebar.markdown("## Preview Of Selected Image! 👀")
-        streamlit_preview_image(image)
-
-        metric = st.sidebar.radio("metric ",["Confidence cutoff"])
-
-        # Detections below this confidence will be ignored
-        confidence_cutoff = st.sidebar.slider("Cutoff",0.0,1.0,(0.5))
-
-        # YOLO Detection
-        # Preprocess
-        frame = cv2.resize(np.asarray(image), (416, 416))
-
-        # Get parameter
-        MIN_CONF = confidence_cutoff
-        show_prob = st.sidebar.checkbox('Show Probability')
-        w, h = image.size
-
-        # Inference
-        # if st.button('Run Inference'):
-
-        # Initialization
-        # load the COCO class labels our YOLO model was trained on
-        labelsPath = config.LABEL_PATH
-        LABELS = open(labelsPath).read().strip().split("\n")
-
-        # derive the paths to the YOLO weights and model configuration
-        weightsPath = config.MODEL_PATH
-        configPath = config.CONFIG_PATH
-
-        @st.cache(allow_output_mutation=True)
-        def load_network(configpath, weightspath):
-
-            # load our YOLO object detector trained on our dataset (1 class)
-            net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
-
-            # determine only the *output* layer names that we need from YOLO
-            output_layer_names = net.getLayerNames()
-            output_layer_names = [output_layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-            return net, output_layer_names
-
-        net, output_layer_names = load_network(configPath, weightsPath)
-        results = yolo_detect(frame, net, output_layer_names, Idx=LABELS.index("number_plate"))
-
-        if show_prob:
-            # Show detection results in dataframe
-            probs = [result[0] for result in results]
-            df = pd.DataFrame(dict(ID=list(range(len(results))), Prob=probs))
-            st.dataframe(df)
-
-            # Simple plot
-            st.line_chart(df['Prob'])
-
-        # Loop over the results
-        for (i, (prob, bbox, centroid)) in enumerate(results):
-            # Extract the bounding box and centroid coordinates
-            (startX, startY, endX, endY) = bbox
-            (cX, cY) = centroid
-
-            # Overlay
-            cv2.rectangle(frame, (startX, startY), (endX, endY), (255, 255, 255), 2)
-            # cv2.circle(frame, (cX, cY), 5, (0, 255, 0), 1)
-
-        # Show result
-        image = cv2.resize(np.asarray(frame), (w, h)) # resizing image as yolov3 gives 416*416 as output
-
-
-        try:
-            crop = cropped_image(frame, (startX, startY, endX, endY))
-            
-            # resizing cropped image
-            crop_w, crop_h = endX - startX, endY - startY # height & width of number plate of 416*416 image
-            width_m, height_m = w/416, h/416 # width and height multiplier
-            w2, h2 = round(crop_w*width_m), round(crop_h*height_m)
-            crop = cv2.resize(np.asarray(crop), (w2, h2))
-            
-        except NameError as e:
-            st.error('''
-            Model is not confident enough!
-            \nTry lowering the confidence cutoff score from sidebar.
-            ''')
-            st.error("Error log: "+str(e))
-        
-        streamlit_output_image(image, "YoloV3 Output")
-
-        try:
-            crop = Image.fromarray(crop)
-        except:
-            pass
-
-        if crop :
-            enhance_crop(crop)
-            streamlit_OCR(crop)
-        
-elif choice == "About":
-    about()
+                if crop :
+                    enhance_crop(crop)
+                    streamlit_OCR(crop)
