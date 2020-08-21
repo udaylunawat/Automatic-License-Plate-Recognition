@@ -161,7 +161,7 @@ If you'd like to request a new function, feel free to do so by opening an issue 
 
 ## Technologies Used
 
-![](https://forthebadge.com/images/badges/made-with-python.svg)  [<img target="_blank" src="https://keras.io/img/logo.png" width=200>](https://keras.io/) [<img target="_blank" src="https://assets.website-files.com/5dc3b47ddc6c0c2a1af74ad0/5e181830b827fae3a2541766_RGB_Logo_Vertical_Color_Dark_Bg-p-1600.png" width=200>](https://keras.io/)
+![](https://forthebadge.com/images/badges/made-with-python.svg)  [<img target="_blank" src="https://keras.io/img/logo.png" width=200>](https://keras.io/) [<img target="_blank" src="https://assets.website-files.com/5dc3b47ddc6c0c2a1af74ad0/5e18182ab1025a63c984f248_RGB_Logo_Horizontal_Color_Dark_Bg-p-1600.png" width=200>](https://keras.io/)
 
 [<img target="_blank" src="https://github.com/udaylunawat/Automatic-License-Plate-Recognition/blob/master/banners/docker5.png?raw=true">](https://keras.io/) 
 
