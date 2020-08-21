@@ -1,6 +1,7 @@
 import streamlit as st
 import pytesseract
-# import easyocr
+import easyocr
+reader = easyocr.Reader(['en'])
 import numpy as np
 
 def try_all_OCR(crop_image):
@@ -23,7 +24,7 @@ def try_all_OCR(crop_image):
                 continue
 
 def easy_OCR(crop):
-    reader = easyocr.Reader(['en'])
+
     ocr_output = reader.readtext(np.array(crop))
     plate_text = ''
     for text in ocr_output:

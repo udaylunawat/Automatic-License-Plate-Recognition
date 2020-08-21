@@ -12,7 +12,7 @@ from keras_retinanet.utils.image import preprocess_image, resize_image
 import keras.backend.tensorflow_backend as tb
 tb._SYMBOLIC_SCOPE.value = True
 
-from config import DEFAULT_CONFIDENCE as confidence_cutoff, labels_to_names
+from config import labels_to_names
 from utils.enhance import cropped_image
 
 crop, image = None, None
@@ -67,7 +67,7 @@ def inference(model, image, scale): # session
     return boxes, scores, labels
 
 
-def draw_detections(draw, boxes, scores, labels):
+def draw_detections(draw, boxes, scores, labels, confidence_cutoff):
     draw2 = draw.copy()
     crop_list = []
     b = None
@@ -103,13 +103,13 @@ def draw_detections(draw, boxes, scores, labels):
     return (b[0], b[1], b[2], b[3]), draw, crop_list
 
 
-def retinanet_detector(image_path, model):
+def retinanet_detector(image_path, model, confidence_cutoff):
 
     image = load_image(image_path)
     
     image, draw, scale = image_preprocessing(image)
     boxes, scores, labels = inference(model, image, scale) # session
-    b, draw, crop_list = draw_detections(draw, boxes, scores, labels)
+    b, draw, crop_list = draw_detections(draw, boxes, scores, labels, confidence_cutoff)
 
     #Write out image
     drawn = Image.fromarray(draw)

@@ -28,7 +28,7 @@ import time
 import random
 import pandas as pd
 
-# import easyocr
+import easyocr
 
 # miscellaneous modules
 # from pyngrok import ngrok
@@ -179,7 +179,6 @@ def streamlit_OCR(output_image):
             try:
                 easy_ocr = easy_OCR(output_image)
                 placeholder.success("easy OCR: " + easy_ocr)
-                st.balloons()
 
             except NameError:
                 placeholder.error("EasyOCR not installed")
@@ -296,7 +295,7 @@ elif choice == "RetinaNet Detection" or "YoloV3 Detection":
                 model = load_retinanet()
                 try:
                     with st.spinner('Calculating...'):
-                        annotated_image, score, crop_list = retinanet_detector(IMAGE_PATH, model)
+                        annotated_image, score, crop_list = retinanet_detector(IMAGE_PATH, model, confidence_cutoff)
 
                     max_crop = multi_crop(annotated_image, crop_list)
 
