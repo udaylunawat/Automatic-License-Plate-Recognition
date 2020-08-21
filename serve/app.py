@@ -23,12 +23,12 @@ from os import listdir
 from os.path import isfile, join
 import cv2
 import numpy as np
-
 from PIL import Image
 import time
-
 import random
 import pandas as pd
+
+# import easyocr
 
 # miscellaneous modules
 # from pyngrok import ngrok
@@ -193,6 +193,23 @@ def streamlit_OCR(output_image):
         elif OCR_type == "Secret Combo All-out Attack!!":
 
             try_all_OCR(output_image)
+
+def multi_crop(image, crop_list):
+
+    if len(crop_list)!=0: 
+        # https://dbader.org/blog/python-min-max-and-nested-lists
+        [max_crop, max_conf] = max(crop_list, key=lambda x: x[1])
+
+        st.write("## License Plate Detection!")
+        streamlit_output_image(image, 'Annotated Image with model confidence score: {0:.2f}'.format(max_conf))
+        
+        img_list, score_list =  map(list, zip(*crop_list))
+        st.write("### Cropped Plates")
+        st.image(img_list, caption=["Cropped Image with model confidence score:"+'{0:.2f}'.format(score) for score in score_list], width = crop_size)
+    else:
+        st.error("Plate not found! Reduce confidence cutoff or select different image.")
+        return
+    return max_crop
 #======================== Time To See The Magic ===========================
 
 st.sidebar.markdown("## Automatic License Plate recognition system 🇮🇳")
@@ -270,23 +287,7 @@ elif choice == "RetinaNet Detection" or "YoloV3 Detection":
     
     perform = st.empty()
 
-    def predict(image, crop_list):
-
-        max_crop, max_conf = None, None
-
-        # https://dbader.org/blog/python-min-max-and-nested-lists
-        [max_crop, max_conf] = max(crop_list, key=lambda x: x[1])
-
-        st.write("## License Plate Detection!")
-        streamlit_output_image(image, 'Annotated Image with model confidence score: {0:.2f}'.format(max_conf))
-        
-        img_list, score_list =  map(list, zip(*crop_list))
-        st.write("### Cropped Plates")
-        st.image(img_list, caption=["Cropped Image with model confidence score:"+'{0:.2f}'.format(score) for score in score_list], width = crop_size)
-
-        # enhance_crop(max_crop)
-        # streamlit_OCR(max_crop)
-        return max_crop
+    max_crop, max_conf = None, None
 
     if choice == "RetinaNet Detection":
 
@@ -297,20 +298,7 @@ elif choice == "RetinaNet Detection" or "YoloV3 Detection":
                     with st.spinner('Calculating...'):
                         annotated_image, score, crop_list = retinanet_detector(IMAGE_PATH, model)
 
-                    max_crop = predict(annotated_image, crop_list)
-                    # st.write("## License Plate Detection!")
-                    # streamlit_output_image(annotated_image, 'Annotated Image with model confidence score: {0:.2f}'.format(score))
-                    
-                    # img_list, score_list =  map(list, zip(*crop_list))
-                    # st.write("### Cropped Plates")
-                    # st.image(img_list, caption=["Cropped Image with model confidence score:"+'{0:.2f}'.format(score) for score in score_list], width = crop_size)
-
-                    # # https://dbader.org/blog/python-min-max-and-nested-lists
-                    # max_crop, max_conf = None, None
-                    # [max_crop, max_conf] = max(crop_list, key=lambda x: x[1])
-
-                    enhance_crop(max_crop)
-                    streamlit_OCR(max_crop)
+                    max_crop = multi_crop(annotated_image, crop_list)
 
                 except TypeError as e:
 
@@ -320,6 +308,10 @@ elif choice == "RetinaNet Detection" or "YoloV3 Detection":
                             ''')
                     # st.error("Error log: "+str(e))
 
+                if max_crop!= None:
+                    enhance_crop(max_crop)
+                    streamlit_OCR(max_crop)
+
     if choice == "YoloV3 Detection":
 
         if image:
@@ -328,21 +320,8 @@ elif choice == "RetinaNet Detection" or "YoloV3 Detection":
                 try:
                     image, crop_list = yolo_inference(image, confidence_cutoff)
                     
-                    max_crop = predict(image, crop_list)
-                    # streamlit_output_image(image, "YoloV3 Output")
-
-                    # img_list, score_list =  map(list, zip(*crop_list))
-                    # st.write("### Cropped Plates")
-                    # st.image(img_list, caption=["Cropped Image with model confidence score:"+'{0:.2f}'.format(score) for score in score_list], width = crop_size)
-
-                    # # https://dbader.org/blog/python-min-max-and-nested-lists
-                    # max_crop, max_conf = None, None
-
-                    # [max_crop, max_conf] = max(crop_list, key=lambda x: x[1])
-                    
-                    enhance_crop(Image.fromarray(max_crop))
-                    streamlit_OCR(max_crop)
-
+                    max_crop = multi_crop(image, crop_list)
+                    max_crop = Image.fromarray(max_crop)
                 except UnboundLocalError as e:
                     st.write(e)
 
@@ -352,3 +331,7 @@ elif choice == "RetinaNet Detection" or "YoloV3 Detection":
                     \nTry lowering the confidence cutoff score from sidebar.
                     ''')
                     st.error("Error log: "+str(e))
+                
+                if max_crop!= None:
+                    enhance_crop(max_crop)
+                    streamlit_OCR(max_crop)
