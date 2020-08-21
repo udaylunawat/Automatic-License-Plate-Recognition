@@ -1,5 +1,4 @@
-FROM dracarys3/tensorflow:2.2.0-jupyter
-
+FROM dracarys3/alpr:2.2.0-jupyter
 LABEL maintainer="Uday Lunawat @dracarys3"
 
 RUN apt-get update -y && apt-get upgrade -y
@@ -11,4 +10,4 @@ WORKDIR /app
 
 EXPOSE 8080
 
-CMD streamlit run app.py --server.port 8080 --server.enableXsrfProtection=false --server.enableCORS=false
+CMD streamlit run serve/app.py --server.port 8080 --server.enableXsrfProtection=false --server.enableCORS=false
