@@ -52,9 +52,10 @@
 ## Demo
 Link: [Deploy on colab in 2 mins](https://colab.research.google.com/drive/1BqegosjfXthG1v9p3TUVnfvkvMxAOC5g#scrollTo=LUUvnvqrvFy3)
 
-### Home page
+## Home page
 
-<div style="width:100%;height:0;padding-bottom:86%;position:relative;"><iframe src="https://giphy.com/embed/iDxMiptYvfjBqJxdGy" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div><p><a href="https://giphy.com/gifs/machine-learning-ocr-license-plate-iDxMiptYvfjBqJxdGy">via GIPHY</a></p>
+<img src="https://media.giphy.com/media/iDxMiptYvfjBqJxdGy/giphy.gif" width="100%" />
+
 
 YoloV3          |  Retinanet
 :-------------------------:|:-------------------------:
