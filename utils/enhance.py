@@ -13,8 +13,8 @@ def remove_noise(image):
     return cv2.medianBlur(image,5)
  
 #thresholding
-def thresholding(image):
-    return cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+def thresholding(image, rate):
+    return cv2.threshold(image, rate, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
 #dilation
 def dilate(image):
@@ -67,21 +67,21 @@ def enhance_crop(crop):
     st.write("## Enhanced License Plate")
     rgb = np.array(crop.convert('RGB'))
     gray = cv2.cvtColor(rgb,cv2.COLOR_BGR2GRAY)
-    slider = st.sidebar.empty()
-    enhance_type = st.sidebar.radio("Enhance Type",\
-                                   ["Original","Gray-Scale","Contrast",\
+    enhance_type = st.radio("Enhance Type",\
+                                   ["Original","Custom", "Gray-Scale","Contrast",\
                                     "Brightness","Blurring","Cannize",\
                                     "Remove_noise", "Thresholding", "Dilate",\
-                                    "Opening","Erode", "Deskew", "Custom"])
-    
-    rate = slider.slider(enhance_type,0.2,8.0,(1.5))
+                                    "Opening","Erode", "Deskew"])
+    crop_display = st.empty()
+    slider = st.empty()
+    if enhance_type in ["Contrast","Brightness","Blurring","Thresholding","Custom"]:
+        rate = slider.slider(enhance_type,0.2,8.0,(1.5))
 
     if enhance_type == 'Original':
         output_image = crop
 
     elif enhance_type == 'Gray-Scale':
         output_image = cv2.cvtColor(rgb,cv2.COLOR_BGR2GRAY)
-        # output_image = get_grayscale(crop)
 
     elif enhance_type == 'Contrast':
         enhancer = ImageEnhance.Contrast(crop)
@@ -102,7 +102,7 @@ def enhance_crop(crop):
         output_image = remove_noise(rgb)
 
     elif enhance_type == "Thresholding":
-        output_image = thresholding(gray)
+        output_image = thresholding(gray, rate)
 
     elif enhance_type == "Dilate":
         output_image = dilate(rgb)
@@ -118,11 +118,11 @@ def enhance_crop(crop):
 
     elif enhance_type == "Custom":
         # resized = cv2.resize(gray, interpolation=cv2.INTER_CUBIC)
-        dn_gray = cv2.fastNlMeansDenoising(gray, templateWindowSize=7, h=25)
-        gray_bin = cv2.threshold(dn_gray, 80, 255, cv2.THRESH_BINARY)[1]
+        dn_gray = cv2.fastNlMeansDenoising(gray, templateWindowSize=7, h=rate)
+        gray_bin = thresholding(dn_gray, rate)
         output_image = gray_bin
 
-    st.image(output_image, width = crop_size, caption = enhance_type)
-
+    crop_display.image(output_image, width = crop_size, caption = enhance_type)
+    return output_image
 
 

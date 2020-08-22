@@ -37,21 +37,7 @@ import webbrowser
 # https://github.com/keras-team/keras/issues/13353#issuecomment-545459472
 import keras.backend.tensorflow_backend as tb
 tb._SYMBOLIC_SCOPE.value = True
-#================================= Functions =================================
 
-def streamlit_preview_image(image):
-    placeholder = st.sidebar.empty()
-    placeholder.image(
-    image,
-    use_column_width=True,
-    caption = "Original Image")
-
-def streamlit_output_image(image, caption):
-    placeholder = st.empty()
-    placeholder.image(
-    image,
-    use_column_width=True,
-    caption = caption)
 
 #============================ About ==========================
 def about():
@@ -72,6 +58,7 @@ def about():
                 ⭕ Something Went Wrong!!! Please Try Again Later!!!
                 """)
     st.info("Built with Streamlit by [Uday Lunawat 😎](https://github.com/udaylunawat)")
+
 
 # @st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=True)
 def about_yolo():
@@ -95,6 +82,7 @@ def about_yolo():
         And, of course, just like other **single-shot detectors**, \
         YOLO V3 also runs **quite fast** and makes **real-time inference** possible on **GPU** devices.")
 
+
 # @st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=True)
 def about_retinanet():
     od_dir = 'banners/Object detection/'
@@ -108,58 +96,30 @@ def about_retinanet():
         This architecture demonstrates **higher accuracy** in situations where *speed is not really important*. \
         RetinaNet is built on top of FPN using ResNet.")
 
-def select_image():
 
-    crop, image = None, None
+#================================= Functions =================================
 
-    st.write("## Upload your own image")
-    samplefiles = sorted([sample for sample in listdir('data/sample_images')])
-    radio_list = ['Choose existing', 'Upload']
+def streamlit_preview_image(image):
+    st.sidebar.image(
+                image,
+                use_column_width=True,
+                caption = "Original Image")
 
-    query_params = st.experimental_get_query_params()
-    # Query parameters are returned as a list to support multiselect.
-    # Get the second item (upload) in the list if the query parameter exists.
-    # Setting default page as Upload page, checkout the url too. The page state can be shared now!
-    default = 1
-
-    activity = st.radio("Choose existing sample or try your own:", radio_list, index=default)
-    
-    if activity:
-        st.experimental_set_query_params(activity=radio_list.index(activity))
-        if activity == 'Choose existing':
-            selected_sample = st.selectbox("Pick from existing samples", (samplefiles))
-            image = Image.open('data/sample_images/'+selected_sample)
-            IMAGE_PATH = 'data/sample_images/'+selected_sample
-            image = Image.open('data/sample_images/'+selected_sample)
-            img_file_buffer = None
-
-        else:
-            # You can specify more file types below if you want
-            img_file_buffer = st.file_uploader("Upload image", type=['jpeg', 'png', 'jpg', 'webp'], multiple_files = True)
-
-            IMAGE_PATH = img_file_buffer
-            try:
-                image = Image.open(IMAGE_PATH)
-            except:
-                pass
-            
-            if image is None:
-                st.success("Upload Image!")
-            selected_sample = None
-
-    return image, selected_sample, IMAGE_PATH
+def streamlit_output_image(image, caption):
+    st.image(image,
+            use_column_width=True,
+            caption = caption)
 
 def streamlit_OCR(output_image):
 
     st.write("## 🎅 Bonus:- Optical Character Recognition (OCR)")
     
     st.error("Note: OCR is performed on the enhanced cropped images.")
-
-
-    button = st.empty()
-    placeholder = st.empty()
+    
     note = st.empty()
-
+    OCR_type = st.radio("OCR Mode",["Google's Tesseract OCR","easy_OCR","Secret Combo All-out Attack!!"])
+    button = st.empty()
+    ocr_text = st.empty()
     if button.button('Recognize Characters !!'):
         
         if OCR_type == "Google's Tesseract OCR":
@@ -167,10 +127,10 @@ def streamlit_OCR(output_image):
             tessy_ocr = OCR(output_image)
             
             if len(tessy_ocr) == 0:
-                placeholder.error("Google's Tesseract OCR Failed! :sob:")
+                ocr_text.error("Google's Tesseract OCR Failed! :sob:")
 
             else:
-                placeholder.success("Google's Tesseract OCR: " + tessy_ocr)
+                ocr_text.success("Google's Tesseract OCR: " + tessy_ocr)
                 st.error("Researching Google's Tesseract OCR is a work in progress 🚧\
             \nThe results might be unreliable.")
 
@@ -178,16 +138,16 @@ def streamlit_OCR(output_image):
 
             try:
                 easy_ocr = easy_OCR(output_image)
-                placeholder.success("easy OCR: " + easy_ocr)
+                ocr_text.success("easy OCR: " + easy_ocr)
 
             except NameError:
-                placeholder.error("EasyOCR not installed")
+                ocr_text.error("EasyOCR not installed")
 
             except ModuleNotFoundError:
-                placeholder.error("EasyOCR not installed")
+                ocr_text.error("EasyOCR not installed")
 
             except:
-                placeholder.error("Easy OCR Failed! :sob:")
+                ocr_text.error("Easy OCR Failed! :sob:")
 
         elif OCR_type == "Secret Combo All-out Attack!!":
 
@@ -209,6 +169,7 @@ def multi_crop(image, crop_list):
         st.error("Plate not found! Reduce confidence cutoff or select different image.")
         return
     return max_crop
+
 #======================== Time To See The Magic ===========================
 
 st.sidebar.markdown("## Automatic License Plate recognition system 🇮🇳")
@@ -254,21 +215,56 @@ elif choice == "About":
 
 elif choice == "RetinaNet Detection" or "YoloV3 Detection":
 
-    image, selected_sample, IMAGE_PATH = select_image()
+    crop, image = None, None
 
-    st.error("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
+    st.write("## Upload your own image")
+
+    # placeholders
+    choose = st.empty() 
+    upload = st.empty()
+    note = st.empty()
+    note.error("**Note:** The model has been trained on Indian cars and number plates, and therefore will only work with those kind of images.")
+
+    # Detections below this confidence will be ignored
+    confidence = st.slider("Confidence Cutoff",0.0,1.0,(0.5))
+    predictor = st.checkbox("Make a Prediction 🔥")
+
+    samplefiles = sorted([sample for sample in listdir('data/sample_images')])
+    radio_list = ['Choose existing', 'Upload']
+
+    query_params = st.experimental_get_query_params()
+    # Query parameters are returned as a list to support multiselect.
+    # Get the second item (upload) in the list if the query parameter exists.
+    # Setting default page as Upload page, checkout the url too. The page state can be shared now!
+    default = 1
+
+    activity = choose.radio("Choose existing sample or try your own:", radio_list, index=default)
+    
+    if activity:
+        st.experimental_set_query_params(activity=radio_list.index(activity))
+        if activity == 'Choose existing':
+            selected_sample = upload.selectbox("Pick from existing samples", (samplefiles))
+            image = Image.open('data/sample_images/'+selected_sample)
+            IMAGE_PATH = 'data/sample_images/'+selected_sample
+            image = Image.open('data/sample_images/'+selected_sample)
+            img_file_buffer = None
+
+        else:
+            # You can specify more file types below if you want
+            img_file_buffer = upload.file_uploader("Upload image", type=['jpeg', 'png', 'jpg', 'webp'], multiple_files = True)
+
+            IMAGE_PATH = img_file_buffer
+            try:
+                image = Image.open(IMAGE_PATH)
+            except:
+                pass
+
+            selected_sample = None
 
     if image:
         
         st.sidebar.markdown("## Preview Of Selected Image! 👀")
         streamlit_preview_image(image)
-
-        metric = st.sidebar.radio("metric ",["Confidence cutoff"])
-
-        # Detections below this confidence will be ignored
-        confidence_cutoff = st.sidebar.slider("Cutoff",0.0,1.0,(0.5))
-        
-        OCR_type = st.sidebar.radio("OCR Mode",["Google's Tesseract OCR","easy_OCR","Secret Combo All-out Attack!!"])
         
         docs = st.sidebar.empty()
         if docs.checkbox("View Documentation"):
@@ -277,48 +273,46 @@ elif choice == "RetinaNet Detection" or "YoloV3 Detection":
             else:
                 about_yolo()
 
-    if image is None :
+    else :
 
         if choice == "RetinaNet Detection":
             about_retinanet()
         else:
             about_yolo()
-    
-    perform = st.empty()
 
     max_crop, max_conf = None, None
 
     if choice == "RetinaNet Detection":
 
         if image:
-            if st.checkbox("Make a Prediction 🔥"):
+            if predictor:
                 model = load_retinanet()
                 try:
-                    with st.spinner('Calculating...'):
-                        annotated_image, score, crop_list = retinanet_detector(IMAGE_PATH, model, confidence_cutoff)
-
+                    # gif_runner = image_holder.image('banners/processing.gif', width = img_size)
+                    annotated_image, score, crop_list = retinanet_detector(IMAGE_PATH, model, confidence)
+                    # gif_runner.empty()
                     max_crop = multi_crop(annotated_image, crop_list)
 
                 except TypeError as e:
 
                     st.warning('''
                             Model is not confident enough!
-                            \nTry lowering the confidence cutoff score from sidebar.
+                            \nTry lowering the confidence cutoff.
                             ''')
                     # st.error("Error log: "+str(e))
 
                 if max_crop!= None:
-                    enhance_crop(max_crop)
-                    streamlit_OCR(max_crop)
+                    enhanced = enhance_crop(max_crop)
+
+                    streamlit_OCR(enhanced)
 
     if choice == "YoloV3 Detection":
-
         if image:
-
-            if st.checkbox("Make a Prediction 🔥"):
+            if predictor:
                 try:
-                    image, crop_list = yolo_inference(image, confidence_cutoff)
-                    
+                    # gif_runner = image_holder.image('banners/processing.gif', width = img_size)
+                    image, crop_list = yolo_inference(image, confidence)
+                    # gif_runner.empty()
                     max_crop = multi_crop(image, crop_list)
                     
                 except UnboundLocalError as e:
@@ -327,11 +321,11 @@ elif choice == "RetinaNet Detection" or "YoloV3 Detection":
                 except NameError as e:
                     st.error('''
                     Model is not confident enough!
-                    \nTry lowering the confidence cutoff score from sidebar.
+                    \nTry lowering the confidence cutoff.
                     ''')
                     st.error("Error log: "+str(e))
                 
                 if isinstance(max_crop, np.ndarray):
                     max_crop = Image.fromarray(max_crop)
-                    enhance_crop(max_crop)
-                    streamlit_OCR(max_crop)
+                    enhanced = enhance_crop(max_crop)
+                    streamlit_OCR(enhanced)
