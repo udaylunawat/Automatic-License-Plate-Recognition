@@ -59,8 +59,8 @@ def inference(model, image, scale): # session
     
     start = time.time()
     boxes, scores, labels = model.predict_on_batch(np.expand_dims(image, axis=0))
-    st.error("Processing time for RetinaNet: --- {0:.4f} seconds ---".format(time.time() - start))
-    print("Processing time for RetinaNet: --- {0:.4f} seconds ---".format(time.time() - start))
+    st.sidebar.success("Processing time for RetinaNet: {} {:.4f} seconds.".format("\n",time.time() - start))
+    print("Processing time for RetinaNet: {:.4f} seconds ".format(time.time() - start))
 
     # correct for image scale
     boxes /= scale
@@ -84,7 +84,6 @@ def draw_detections(draw, boxes, scores, labels, confidence_cutoff):
 
         try:
             crop_list.append([cropped_image(draw2, (b[0], b[1], b[2], b[3]) ), score])
-            # st.image(cropped_image(draw2, (b[0], b[1], b[2], b[3]) ), width=300, caption=score)
 
             cv2.rectangle(draw, (b[0], b[1]), (b[2], b[3]), color, thickness, cv2.LINE_AA)
 

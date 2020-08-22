@@ -32,10 +32,9 @@ def yolo_detector(frame, net, ln, MIN_CONF, Idx=0):
 
     start = time.time()
 
-    with st.spinner("Calculating..."):
-        layerOutputs = net.forward(ln)
-    st.success("Processing time for YOLOV3: --- {0:.4f} seconds ---".format(time.time() - start))
-    print("Processing time for YOLOV3: --- {0:.4f} seconds ---".format(time.time() - start))
+    layerOutputs = net.forward(ln)
+    st.sidebar.success("Processing time for YOLOV3: {} {:.4f} seconds.".format('\n',time.time() - start))
+    print("Processing time for YOLOV3: --- {:.4f} seconds ---".format(time.time() - start))
     # initialize our lists of detected bounding boxes, centroids, and
     # confidences, respectively
     boxes = []
@@ -127,20 +126,10 @@ def yolo_inference(image, confidence_cutoff):
 
     # Get parameter
     MIN_CONF = confidence_cutoff
-    show_prob = st.sidebar.checkbox('Show Probability')
     w, h = image.size
 
     net, output_layer_names = load_network(configPath, weightsPath)
     results = yolo_detector(frame, net, output_layer_names, MIN_CONF, Idx=LABELS.index("number_plate"))
-
-    if show_prob:
-        # Show detection results in dataframe
-        probs = [result[0] for result in results]
-        df = pd.DataFrame(dict(ID=list(range(len(results))), Prob=probs))
-        st.dataframe(df)
-
-        # Simple plot
-        st.line_chart(df['Prob'])
 
     crop_list = []
     # Loop over the results
