@@ -320,7 +320,7 @@ elif choice == "RetinaNet Detection" or "YoloV3 Detection":
                     image, crop_list = yolo_inference(image, confidence_cutoff)
                     
                     max_crop = multi_crop(image, crop_list)
-                    max_crop = Image.fromarray(max_crop)
+                    
                 except UnboundLocalError as e:
                     st.write(e)
 
@@ -331,6 +331,7 @@ elif choice == "RetinaNet Detection" or "YoloV3 Detection":
                     ''')
                     st.error("Error log: "+str(e))
                 
-                if max_crop!= None:
+                if isinstance(max_crop, np.ndarray):
+                    max_crop = Image.fromarray(max_crop)
                     enhance_crop(max_crop)
                     streamlit_OCR(max_crop)
