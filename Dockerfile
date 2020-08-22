@@ -1,12 +1,14 @@
-FROM dracarys3/alpr:2.2.0-jupyter
+FROM dracarys3/alpr-india:3.2-tf2.2.0-jupyter
 LABEL maintainer="Uday Lunawat @dracarys3"
 
 RUN apt-get update -y && apt-get upgrade -y
 
 # setting work directory and copying content
 WORKDIR /app
-# ADD requirements.txt /app/requirements.txt
-# ADD . /app
+ADD . /app
+
+# Generating data ETL, downloading inference and installing retinanet from source
+RUN make -s ETL
 
 EXPOSE 8080
 
