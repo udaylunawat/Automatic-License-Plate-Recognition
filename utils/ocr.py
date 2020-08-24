@@ -1,9 +1,11 @@
 import streamlit as st
 import pytesseract
-import re
-import easyocr
-reader = easyocr.Reader(['en'])
 import numpy as np
+try:
+    import easyocr
+    reader = easyocr.Reader(['en'])
+except:
+    pass
 
 def try_all_OCR(crop_image):
     st.write(" **OEM**: Engine mode \
@@ -25,13 +27,13 @@ def try_all_OCR(crop_image):
 
 def easy_OCR(crop_image):
     ocr_output = reader.readtext(np.array(crop_image))
-    plate_text = ''
+    text_output = ''
     for text in ocr_output:
-        plate_text += text[1]
-    return plate_text
+        text_output += text[1]
+    return text_output
 
 def OCR(crop_image):
-    # psm 6 - single line license
+    text_output = ''
     try:
         custom_config = r'-l eng -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 --oem 1 --psm 6'
         text_output = pytesseract.image_to_string(crop_image, config=custom_config)
