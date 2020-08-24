@@ -2,8 +2,6 @@ import streamlit as st
 import cv2
 import numpy as np
 from PIL import Image,ImageEnhance
-import re
-
 crop, image = None, None
 img_size, crop_size = 600, 400
 
