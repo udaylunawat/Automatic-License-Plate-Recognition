@@ -166,7 +166,7 @@ If you'd like to request a new function, feel free to do so by opening an issue 
 [<img target="_blank" src="https://github.com/udaylunawat/Automatic-License-Plate-Recognition/blob/master/banners/docker5.png?raw=true">](https://keras.io/) 
 
 ## Team
-[![Uday Lunawat](https://avatars1.githubusercontent.com/u/24354945?s=460&u=f1eb1d9248a0287547da38849ffbc0b01c931585&v=4)](https://rohitswami.com/) |
+[![Uday Lunawat](https://avatars1.githubusercontent.com/u/24354945?s=460&u=f1eb1d9248a0287547da38849ffbc0b01c931585&v=4)](https://udaylunawat.github.io/) |
 -|
 [Uday Lunawat](https://udaylunawat.github.io/) |)
 
