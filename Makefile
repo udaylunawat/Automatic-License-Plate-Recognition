@@ -11,8 +11,8 @@ PYTHON_INTERPRETER = python3
 
 JSON_DOWNLOAD_URL = https://www.dropbox.com/s/8netfite5znq6o4/Indian_Number_plates.json
 IMAGES_ZIP = https://www.dropbox.com/s/k3mhm1kz192bwue/Indian_Number_Plates.7z
-INFERENCE = https://storage.googleapis.com/dracarys3_bucket/Public/plate_inference_tf2_2.h5
-YOLO_W = https://storage.googleapis.com/dracarys3_bucket/Public/yolov3-custom_last.weights
+INFERENCE = https://www.dropbox.com/s/3jyh4xs8x15r3dh/plate_inference_tf2_2.h5
+YOLO_W = https://www.dropbox.com/s/cl54hm80unj3nzm/yolov3-custom_last.weights
 
 ifeq (,$(shell which conda))
 HAS_CONDA=False
