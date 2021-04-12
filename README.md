@@ -200,8 +200,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ## Credits
-- Rohit Swami
-- Cookie Cutter Data Science
+- [Rohit Swami](https://github.com/rowhitswami/Indian-Paper-Currency-Prediction)
+- [Cookie Cutter Data Science](https://drivendata.github.io/cookiecutter-data-science/)
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
 
