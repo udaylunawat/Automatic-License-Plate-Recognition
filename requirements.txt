@@ -2,17 +2,18 @@
 -e .
 
 # external requirements
-tensorflow==2.2
-Keras==2.3.1
-click
-seaborn
-Sphinx
-coverage
+# easyocr
 awscli
+click
+coverage
 flake8
+Keras==2.3.1
+opencv-python
+pytesseract
 python-dotenv>=0.5.1
 pyngrok
+seaborn
+Sphinx
 sklearn
-# easyocr
-pytesseract
 streamlit-nightly
+tensorflow==2.2
