@@ -200,7 +200,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ## Credits
-- [Rohit Swami](https://github.com/rowhitswami/Indian-Paper-Currency-Prediction)
+- README inspired by [Rohit Swami!](https://github.com/rowhitswami/Indian-Paper-Currency-Prediction)
 - [Cookie Cutter Data Science](https://drivendata.github.io/cookiecutter-data-science/)
 
 
