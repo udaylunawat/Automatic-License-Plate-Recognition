@@ -203,8 +203,8 @@ limitations under the License.
 - [Rohit Swami](https://github.com/rowhitswami/Indian-Paper-Currency-Prediction)
 - [Cookie Cutter Data Science](https://drivendata.github.io/cookiecutter-data-science/)
 
-<p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
 
+<p align="center"> Show some ❤️ by starring some of the repositories!
 <p align="center"> Made with :blue_heart: for India
 
 [contributors-shield]: https://img.shields.io/github/contributors/udaylunawat/Automatic-License-Plate-Recognition.svg?style=flat-square
