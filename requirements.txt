@@ -16,4 +16,4 @@ seaborn
 Sphinx
 sklearn
 streamlit-nightly
-tensorflow==2.2
+tensorflow==2.7.2
