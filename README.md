@@ -15,6 +15,12 @@
   </p>
 </p>
 
+<p align="center">
+  <em>Check out the spotlight on <a href="https://github.com/jrieke/best-of-streamlit" style="text-decoration: none;">Best of Streamlit!</a> (Computer Vision Section)</em>
+</p>
+
+
+
 <!-- TABLE OF CONTENTS -->
 ## Table of Contents
 
