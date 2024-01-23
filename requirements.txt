@@ -3,17 +3,17 @@
 
 # external requirements
 # easyocr
-awscli
-click
-coverage
-flake8
+awscli==1.18.205
+click==7.1.2
+coverage==3.7.1
+flake8==3.8.4
 Keras==2.3.1
 opencv-python
-pytesseract
+pytesseract==0.3.7
 python-dotenv>=0.5.1
 pyngrok
-seaborn
-Sphinx
+seaborn==0.11.0
+Sphinx==1.8.5
 sklearn
-streamlit-nightly
+streamlit-nightly==0.73.2.dev20201229
 tensorflow==2.2
