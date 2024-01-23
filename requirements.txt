@@ -1,5 +1,3 @@
-%%writefile requirements.txt
-
 # local package
 -e .
 
