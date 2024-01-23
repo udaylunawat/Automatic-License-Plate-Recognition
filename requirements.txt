@@ -1,19 +1,21 @@
+%%writefile requirements.txt
+
 # local package
 -e .
 
 # external requirements
 # easyocr
-awscli==1.18.205
+awscli
 click==7.1.2
 coverage==3.7.1
 flake8==3.8.4
-Keras==2.3.1
+Keras==2.10
 opencv-python
 pytesseract==0.3.7
-python-dotenv>=0.5.1
+python-dotenv
 pyngrok
 seaborn==0.11.0
 Sphinx==1.8.5
 scikit-learn
-streamlit-nightly==0.73.2.dev20201229
-tensorflow==2.2
+streamlit==0.74
+tensorflow==2.10
